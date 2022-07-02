@@ -11,8 +11,10 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +43,7 @@ public final class CsvFileSourceUserRepository extends UserRepository {
 			LOGGER.info(String.format(
 					"File '%s' created",
 					file));
-			if (this.updateUsersFrom(file)) {
-				LOGGER.info("In-memory copy updated successfully");
-			}
+			this.updateUserRepositoryFrom(file);
 		}
 		
 		@Override
@@ -58,23 +58,20 @@ public final class CsvFileSourceUserRepository extends UserRepository {
 			LOGGER.info(String.format(
 					"File '%s' modified",
 					file));
-			if (this.updateUsersFrom(file)) {
-				LOGGER.info("In-memory copy updated successfully");
-			}
+			this.updateUserRepositoryFrom(file);
 		}
 		
-		private boolean updateUsersFrom(final File file) {
+		private void updateUserRepositoryFrom(final File file) {
 			try {
-				this.userRepository.update();
+				this.userRepository.updateFromCsvFile();
+				LOGGER.info("In-memory copy is up to date");
 			} catch (UncheckedIOException e) {
 				LOGGER.error( 
 						String.format(
 								"Error in reading file '%s'", 
 								file), 
 						e);
-				return false;				
 			}
-			return true;
 		}
 		
 	}
@@ -138,23 +135,29 @@ public final class CsvFileSourceUserRepository extends UserRepository {
 			}
 		}
 		try {
-			Files.move(tempCsvFile.toPath(), csvFile.toPath());
+			Files.move(
+					tempCsvFile.toPath(), 
+					csvFile.toPath(),
+					StandardCopyOption.ATOMIC_MOVE,
+					StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
 	}
 	
-	private ExecutorService executor;
-	private volatile Users users;
 	private final File csvFile;
+	private ExecutorService executor;
+	private final AtomicLong lastUpdated;
+	private volatile Users users;
 	
 	private CsvFileSourceUserRepository(final String initializationVal) {
 		super(initializationVal);
 		File file = new File(initializationVal);
 		Users usrs = readUsersFrom(file);
-		this.executor = null;
-		this.users = usrs;
 		this.csvFile = file;
+		this.executor = null;
+		this.lastUpdated = new AtomicLong(System.currentTimeMillis());
+		this.users = usrs;
 	}
 	
 	@Override
@@ -171,21 +174,21 @@ public final class CsvFileSourceUserRepository extends UserRepository {
 	public void put(final User user) {
 		Users usrs = Users.newInstance(this.users);
 		usrs.put(user);
-		writeUsersTo(this.csvFile, usrs);
+		this.updateFrom(usrs);
 	}
 	
 	@Override
 	public void putAll(final Users users) {
 		Users usrs = Users.newInstance(this.users);
 		usrs.putAll(users);
-		writeUsersTo(this.csvFile, usrs);
+		this.updateFrom(usrs);
 	}
 
 	@Override
 	public void remove(final String name) {
 		Users usrs = Users.newInstance(this.users);
 		usrs.remove(name);
-		writeUsersTo(this.csvFile, usrs);		
+		this.updateFrom(usrs);
 	}
 
 	private void startMonitoringCsvFile() {
@@ -195,9 +198,22 @@ public final class CsvFileSourceUserRepository extends UserRepository {
 				new UsersFileStatusListener(this)));
 	}
 	
-	private void update() {
-		Users usrs = readUsersFrom(this.csvFile);
+	private synchronized void updateFrom(final Users usrs) {
+		writeUsersTo(this.csvFile, usrs);
+		this.updateUsers(usrs);
+	}
+	
+	private synchronized void updateFromCsvFile() {
+		if (this.csvFile.exists() 
+				&& this.csvFile.lastModified() > this.lastUpdated.longValue()) {
+			Users usrs = readUsersFrom(this.csvFile);
+			this.updateUsers(usrs);
+		}
+	}
+	
+	private void updateUsers(final Users usrs) {
 		this.users = usrs;
+		this.lastUpdated.set(System.currentTimeMillis());
 	}
 
 }

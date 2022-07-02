@@ -7,9 +7,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +43,7 @@ public final class XmlFileSourceConfigurationRepository
 			LOGGER.info(String.format(
 					"File '%s' created",
 					file));
-			if (this.updateConfigurationFrom(file)) {
-				LOGGER.info("In-memory copy updated successfully");
-			}
+			this.updateConfigurationRepositoryFrom(file);
 		}
 
 		@Override
@@ -58,23 +58,20 @@ public final class XmlFileSourceConfigurationRepository
 			LOGGER.info(String.format(
 					"File '%s' modified",
 					file));
-			if (this.updateConfigurationFrom(file)) {
-				LOGGER.info("In-memory copy updated successfully");
-			}
+			this.updateConfigurationRepositoryFrom(file);
 		}
 		
-		private boolean updateConfigurationFrom(final File file) {
+		private void updateConfigurationRepositoryFrom(final File file) {
 			try {
-				this.configurationRepository.update();
+				this.configurationRepository.updateFromXmlFile();
+				LOGGER.info("In-memory copy is up to date");
 			} catch (UncheckedIOException e) {
 				LOGGER.error(
 						String.format(
 								"Error in reading file '%s'", 
 								file), 
 						e);
-				return false;
 			}
-			return true;
 		}
 		
 	}
@@ -136,7 +133,11 @@ public final class XmlFileSourceConfigurationRepository
 			}
 		}
 		try {
-			Files.move(tempXmlFile.toPath(), xmlFile.toPath());
+			Files.move(
+					tempXmlFile.toPath(), 
+					xmlFile.toPath(),
+					StandardCopyOption.ATOMIC_MOVE, 
+					StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -144,6 +145,7 @@ public final class XmlFileSourceConfigurationRepository
 	
 	private volatile Configuration configuration;
 	private ExecutorService executor;
+	private final AtomicLong lastUpdated;
 	private final File xmlFile;
 	
 	private XmlFileSourceConfigurationRepository(final File file) {
@@ -151,6 +153,7 @@ public final class XmlFileSourceConfigurationRepository
 		Configuration config = readConfigurationFrom(file);
 		this.configuration = config;
 		this.executor = null;
+		this.lastUpdated = new AtomicLong(System.currentTimeMillis());
 		this.xmlFile = file;
 	}
 	
@@ -161,7 +164,7 @@ public final class XmlFileSourceConfigurationRepository
 	
 	@Override
 	public void set(final Configuration config) {
-		writeConfigurationTo(this.xmlFile, config);
+		this.updateFrom(config);
 	}
 	
 	private void startMonitoringXmlFile() {
@@ -171,9 +174,21 @@ public final class XmlFileSourceConfigurationRepository
 				new ConfigurationFileStatusListener(this)));
 	}
 
-	private void update() {
-		Configuration config = readConfigurationFrom(this.xmlFile);
+	private void updateConfiguration(final Configuration config) {
 		this.configuration = config;
+		this.lastUpdated.set(System.currentTimeMillis());
+	}
+	
+	private synchronized void updateFrom(final Configuration config) {
+		writeConfigurationTo(this.xmlFile, config);		
+		this.updateConfiguration(config);
 	}
 
+	private synchronized void updateFromXmlFile() {
+		if (this.xmlFile.exists() 
+				&& this.xmlFile.lastModified() > this.lastUpdated.longValue()) {
+			Configuration config = readConfigurationFrom(this.xmlFile);
+			this.updateConfiguration(config);
+		}
+	}
 }
