@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -207,6 +208,11 @@ final class ConnectCommandWorker extends CommandWorker {
 			return host;
 		}
 		host = this.applicableRule.getLastRuleResultValue(
+				Socks5RuleResultSpecConstants.SOCKS5_ON_COMMAND_BIND_HOST);
+		if (host != null) {
+			return host;
+		}
+		host = this.applicableRule.getLastRuleResultValue(
 				GeneralRuleResultSpecConstants.EXTERNAL_FACING_BIND_HOST);
 		if (host != null) {
 			return host;
@@ -223,6 +229,11 @@ final class ConnectCommandWorker extends CommandWorker {
 		}
 		host = this.settings.getLastValue(
 				Socks5SettingSpecConstants.SOCKS5_ON_COMMAND_EXTERNAL_FACING_BIND_HOST);
+		if (host != null) {
+			return host;
+		}
+		host = this.settings.getLastValue(
+				Socks5SettingSpecConstants.SOCKS5_ON_COMMAND_BIND_HOST);
 		if (host != null) {
 			return host;
 		}
@@ -248,6 +259,11 @@ final class ConnectCommandWorker extends CommandWorker {
 			return PortRanges.newInstance(portRanges);
 		}
 		portRanges = this.applicableRule.getRuleResultValues(
+				Socks5RuleResultSpecConstants.SOCKS5_ON_COMMAND_BIND_TCP_PORT_RANGE);
+		if (portRanges.size() > 0) {
+			return PortRanges.newInstance(portRanges);
+		}
+		portRanges = this.applicableRule.getRuleResultValues(
 				GeneralRuleResultSpecConstants.EXTERNAL_FACING_BIND_TCP_PORT_RANGE);
 		if (portRanges.size() > 0) {
 			return PortRanges.newInstance(portRanges);
@@ -266,7 +282,12 @@ final class ConnectCommandWorker extends CommandWorker {
 				Socks5SettingSpecConstants.SOCKS5_ON_COMMAND_EXTERNAL_FACING_BIND_TCP_PORT_RANGES);
 		if (prtRanges.toList().size() > 0) {
 			return prtRanges;
-		}		
+		}
+		prtRanges = this.settings.getLastValue(
+				Socks5SettingSpecConstants.SOCKS5_ON_COMMAND_BIND_TCP_PORT_RANGES);
+		if (prtRanges.toList().size() > 0) {
+			return prtRanges;
+		}
 		prtRanges = this.settings.getLastValue(
 				GeneralSettingSpecConstants.EXTERNAL_FACING_BIND_TCP_PORT_RANGES);
 		if (prtRanges.toList().size() > 0) {
@@ -304,6 +325,12 @@ final class ConnectCommandWorker extends CommandWorker {
 					socketSettings.stream().collect(Collectors.toList()));
 		}
 		socketSettings = this.applicableRule.getRuleResultValues(
+				Socks5RuleResultSpecConstants.SOCKS5_ON_COMMAND_SOCKET_SETTING);
+		if (socketSettings.size() > 0) {
+			return SocketSettings.newInstance(
+					socketSettings.stream().collect(Collectors.toList()));
+		}
+		socketSettings = this.applicableRule.getRuleResultValues(
 				GeneralRuleResultSpecConstants.EXTERNAL_FACING_SOCKET_SETTING);
 		if (socketSettings.size() > 0) {
 			return SocketSettings.newInstance(
@@ -326,6 +353,11 @@ final class ConnectCommandWorker extends CommandWorker {
 			return socketSttngs;
 		}
 		socketSttngs = this.settings.getLastValue(
+				Socks5SettingSpecConstants.SOCKS5_ON_COMMAND_SOCKET_SETTINGS);
+		if (socketSttngs.toMap().size() > 0) {
+			return socketSttngs;
+		}
+		socketSttngs = this.settings.getLastValue(
 				GeneralSettingSpecConstants.EXTERNAL_FACING_SOCKET_SETTINGS);
 		if (socketSttngs.toMap().size() > 0) {
 			return socketSttngs;
@@ -340,8 +372,12 @@ final class ConnectCommandWorker extends CommandWorker {
 		Socks5Reply socks5Rep = null;
 		Socket serverFacingSocket = null;
 		boolean serverFacingSocketBound = false;
-		for (PortRange bindPortRange : bindPortRanges.toList()) {
-			for (Port bindPort : bindPortRange) {
+		for (Iterator<PortRange> iterator = bindPortRanges.toList().iterator();
+				!serverFacingSocketBound && iterator.hasNext();) {
+			PortRange bindPortRange = iterator.next();
+			for (Iterator<Port> iter = bindPortRange.iterator();
+					!serverFacingSocketBound && iter.hasNext();) {
+				Port bindPort = iter.next();
 				try {
 					serverFacingSocket = this.netObjectFactory.newSocket(
 							this.desiredDestinationAddress, 
@@ -394,10 +430,6 @@ final class ConnectCommandWorker extends CommandWorker {
 					return null;
 				}
 				serverFacingSocketBound = true;
-				break;
-			}
-			if (serverFacingSocketBound) {
-				break;
 			}
 		}
 		if (!serverFacingSocketBound) {
@@ -410,8 +442,7 @@ final class ConnectCommandWorker extends CommandWorker {
 							bindPortRanges));
 			socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(
-					this, socks5Rep, LOGGER);
+			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
 			return null;			
 		}
 		return serverFacingSocket;
@@ -427,11 +458,15 @@ final class ConnectCommandWorker extends CommandWorker {
 		if (desiredDestinationInetAddress == null) {
 			return null;
 		}
+		int connectTimeout = this.getServerFacingConnectTimeout();
 		Socket serverFacingSocket = null;
-		int connectTimeout = this.getServerFacingConnectTimeout();		
 		boolean serverFacingSocketBound = false;
-		for (PortRange bindPortRange : bindPortRanges.toList()) {
-			for (Port bindPort : bindPortRange) {
+		for (Iterator<PortRange> iterator = bindPortRanges.toList().iterator();
+				!serverFacingSocketBound && iterator.hasNext();) {
+			PortRange bindPortRange = iterator.next();
+			for (Iterator<Port> iter = bindPortRange.iterator();
+					!serverFacingSocketBound && iter.hasNext();) {
+				Port bindPort = iter.next();
 				serverFacingSocket = netObjectFactory.newSocket();
 				if (!this.configureServerFacingSocket(serverFacingSocket)) {
 					return null;
@@ -518,10 +553,6 @@ final class ConnectCommandWorker extends CommandWorker {
 					return null;
 				}				
 				serverFacingSocketBound = true;
-				break;
-			}
-			if (serverFacingSocketBound) {
-				break;
 			}
 		}
 		if (!serverFacingSocketBound) {
@@ -534,9 +565,8 @@ final class ConnectCommandWorker extends CommandWorker {
 							bindPortRanges));
 			socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(
-					this, socks5Rep, LOGGER);
-			return null;			
+			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			return null;
 		}
 		return serverFacingSocket;
 	}
