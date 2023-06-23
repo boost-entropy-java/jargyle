@@ -13,8 +13,7 @@ public class SocksServerTest {
 
 	@Test
 	public void testGetHostForChangingConfiguration() throws IOException {
-		ModifiableConfiguration configuration = 
-				ModifiableConfiguration.newInstance();
+		Configuration configuration = Configuration.newModifiableInstance();
 		SocksServer socksServer = new SocksServer(configuration);
 		try {
 			socksServer.start();
@@ -33,8 +32,7 @@ public class SocksServerTest {
 
 	@Test
 	public void testGetPortForChangingConfiguration() throws IOException {
-		ModifiableConfiguration configuration = 
-				ModifiableConfiguration.newInstance();
+		Configuration configuration = Configuration.newModifiableInstance();
 		SocksServer socksServer = new SocksServer(configuration);
 		try {
 			socksServer.start();
