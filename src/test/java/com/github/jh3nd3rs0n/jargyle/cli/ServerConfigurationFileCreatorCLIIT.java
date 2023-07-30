@@ -12,11 +12,8 @@ import org.junit.Test;
 
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.CLI;
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.TerminationRequestedException;
-import com.github.jh3nd3rs0n.jargyle.FilesHelper;
 import com.github.jh3nd3rs0n.jargyle.IoHelper;
-import com.github.jh3nd3rs0n.jargyle.ResourceHelper;
-import com.github.jh3nd3rs0n.jargyle.ResourceNameConstants;
-import com.github.jh3nd3rs0n.jargyle.ThreadHelper;
+import com.github.jh3nd3rs0n.jargyle.TestResourceConstants;
 
 public class ServerConfigurationFileCreatorCLIIT {
 	
@@ -38,23 +35,23 @@ public class ServerConfigurationFileCreatorCLIIT {
 	@After
 	public void tearDown() throws Exception {
 		if (this.supplementedConfigurationFile != null) {
-			FilesHelper.attemptsToDeleteIfExists(this.supplementedConfigurationFile);
+			Files.deleteIfExists(this.supplementedConfigurationFile);
 			this.supplementedConfigurationFile = null;
 		}
 		if (this.emptyConfigurationFile != null) {
-			FilesHelper.attemptsToDeleteIfExists(this.emptyConfigurationFile);
+			Files.deleteIfExists(this.emptyConfigurationFile);
 			this.emptyConfigurationFile = null;
 		}
 		if (this.configurationFile != null) {
-			FilesHelper.attemptsToDeleteIfExists(this.configurationFile);
+			Files.deleteIfExists(this.configurationFile);
 			this.configurationFile = null;
 		}
 		if (this.combinedConfigurationFile != null) {
-			FilesHelper.attemptsToDeleteIfExists(this.combinedConfigurationFile);
+			Files.deleteIfExists(this.combinedConfigurationFile);
 			this.combinedConfigurationFile = null;
 		}
 		if (this.baseDir != null) {
-			FilesHelper.attemptsToDeleteIfExists(this.baseDir);
+			Files.deleteIfExists(this.baseDir);
 			this.baseDir = null;
 		}
 	}
@@ -62,10 +59,10 @@ public class ServerConfigurationFileCreatorCLIIT {
 	@Test
 	public void testMainForCombiningConfigurationFiles() throws IOException {
 		String[] args = new String[] {
-				"--config-file=".concat(ResourceHelper.getResourceAsFile(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE).getAbsolutePath()),
-				"--config-file=".concat(ResourceHelper.getResourceAsFile(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_SUPPLEMENTED_CONFIGURATION_FILE).getAbsolutePath()),
+				"--config-file=".concat(
+						TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE.getFile().getAbsolutePath()),
+				"--config-file=".concat(
+						TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_SUPPLEMENTED_CONFIGURATION_FILE.getFile().getAbsolutePath()),
 				this.combinedConfigurationFile.toAbsolutePath().toString()
 		};
 		CLI cli = new ServerConfigurationFileCreatorCLI(null, null, args, false);
@@ -73,11 +70,9 @@ public class ServerConfigurationFileCreatorCLIIT {
 			cli.handleArgs();
 		} catch (TerminationRequestedException e) {
 		}
-		ThreadHelper.sleepForThreeSeconds();		
 		String expectedCombinedConfigurationFileContents =
-				ResourceHelper.getResourceAsString(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_COMBINED_CONFIGURATION_FILE).replace(
-								"\r\n", "\n").trim();
+				TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_COMBINED_CONFIGURATION_FILE.getContentAsString().replace(
+						"\r\n", "\n").trim();
 		String actualCombinedConfigurationFileContents =
 				IoHelper.readStringFrom(this.combinedConfigurationFile.toFile()).replace(
 						"\r\n", "\n").trim();
@@ -99,11 +94,9 @@ public class ServerConfigurationFileCreatorCLIIT {
 			cli.handleArgs();
 		} catch (TerminationRequestedException e) {
 		}
-		ThreadHelper.sleepForThreeSeconds();		
 		String expectedConfigurationFileContents =
-				ResourceHelper.getResourceAsString(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE).replace(
-								"\r\n", "\n").trim();
+				TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE.getContentAsString().replace(
+						"\r\n", "\n").trim();
 		String actualConfigurationFileContents =
 				IoHelper.readStringFrom(this.configurationFile.toFile()).replace(
 						"\r\n", "\n").trim();
@@ -122,11 +115,9 @@ public class ServerConfigurationFileCreatorCLIIT {
 			cli.handleArgs();
 		} catch (TerminationRequestedException e) {
 		}
-		ThreadHelper.sleepForThreeSeconds();		
 		String expectedEmptyConfigurationFileContents =
-				ResourceHelper.getResourceAsString(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_EMPTY_CONFIGURATION_FILE).replace(
-								"\r\n", "\n").trim();
+				TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_EMPTY_CONFIGURATION_FILE.getContentAsString().replace(
+						"\r\n", "\n").trim();
 		String actualEmptyConfigurationFileContents =
 				IoHelper.readStringFrom(this.emptyConfigurationFile.toFile()).replace(
 						"\r\n", "\n").trim();
@@ -138,8 +129,8 @@ public class ServerConfigurationFileCreatorCLIIT {
 	@Test
 	public void testMainForSupplementingAConfigurationFile() throws IOException {
 		String[] args = new String[] {
-				"--config-file=".concat(ResourceHelper.getResourceAsFile(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE).getAbsolutePath()),
+				"--config-file=".concat(
+						TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_CONFIGURATION_FILE.getFile().getAbsolutePath()),
 				"--setting=socksServerSocketSettings=SO_TIMEOUT=0",
 				this.supplementedConfigurationFile.toAbsolutePath().toString()
 		};
@@ -148,11 +139,9 @@ public class ServerConfigurationFileCreatorCLIIT {
 			cli.handleArgs();
 		} catch (TerminationRequestedException e) {
 		}
-		ThreadHelper.sleepForThreeSeconds();		
 		String expectedSupplementedConfigurationFileContents =
-				ResourceHelper.getResourceAsString(
-						ResourceNameConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_SUPPLEMENTED_CONFIGURATION_FILE).replace(
-								"\r\n", "\n").trim();
+				TestResourceConstants.JARGYLE_SERVER_CONFIGREPO_IMPL_SUPPLEMENTED_CONFIGURATION_FILE.getContentAsString().replace(
+						"\r\n", "\n").trim();
 		String actualSupplementedConfigurationFileContents =
 				IoHelper.readStringFrom(this.supplementedConfigurationFile.toFile()).replace(
 						"\r\n", "\n").trim();
