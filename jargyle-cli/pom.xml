@@ -25,7 +25,7 @@
 			<groupId>com.github.jh3nd3rs0n</groupId>
 			<artifactId>jargyle-internal</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>com.github.jh3nd3rs0n</groupId>
 			<artifactId>jargyle-server</artifactId>
@@ -46,7 +46,7 @@
 			<artifactId>test-help</artifactId>
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -55,6 +55,16 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Automatic-Module-Name>com.github.jh3nd3rs0n.jargyle.cli</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>			
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 			</plugin>

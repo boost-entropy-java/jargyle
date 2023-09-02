@@ -24,6 +24,7 @@
 			<groupId>com.github.jh3nd3rs0n</groupId>
 			<artifactId>jargyle-server</artifactId>
 			<version>${project.parent.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.jh3nd3rs0n</groupId>
@@ -63,6 +64,16 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Automatic-Module-Name>com.github.jh3nd3rs0n.echo</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 			</plugin>
