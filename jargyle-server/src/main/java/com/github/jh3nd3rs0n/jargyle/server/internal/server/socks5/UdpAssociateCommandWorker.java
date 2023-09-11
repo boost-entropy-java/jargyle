@@ -39,27 +39,23 @@ import com.github.jh3nd3rs0n.jargyle.transport.socks5.Socks5Reply;
 final class UdpAssociateCommandWorker extends CommandWorker {
 
 	private static final int HALF_SECOND = 500;
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(
-			UdpAssociateCommandWorker.class);
 	
 	private Rule applicableRule;
 	private final DtlsDatagramSocketFactory clientFacingDtlsDatagramSocketFactory;
-	private final Socket clientSocket;
-	private final CommandWorkerContext commandWorkerContext;
 	private final String desiredDestinationAddress;
 	private final int desiredDestinationPort;
+	private final Logger logger;
 	private final MethodSubnegotiationResults methodSubnegotiationResults;	
 	private final NetObjectFactory netObjectFactory;
 	private final Rules rules;
 	private final Settings settings;
 	
-	public UdpAssociateCommandWorker(final CommandWorkerContext context) {
-		super(context);
+	public UdpAssociateCommandWorker(
+			final Socket clientSocket, final CommandWorkerContext context) {
+		super(clientSocket, context);
 		Rule applicableRl = context.getApplicableRule();
 		DtlsDatagramSocketFactory clientFacingDtlsDatagramSockFactory =
 				context.getClientFacingDtlsDatagramSocketFactory();
-		Socket clientSock = context.getClientSocket();
 		String desiredDestinationAddr =	context.getDesiredDestinationAddress();
 		int desiredDestinationPrt = context.getDesiredDestinationPort();
 		MethodSubnegotiationResults methSubnegotiationResults =
@@ -71,10 +67,9 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 		this.applicableRule = applicableRl;
 		this.clientFacingDtlsDatagramSocketFactory = 
 				clientFacingDtlsDatagramSockFactory;
-		this.clientSocket = clientSock;
-		this.commandWorkerContext = context;
 		this.desiredDestinationAddress = desiredDestinationAddr;
 		this.desiredDestinationPort = desiredDestinationPrt;
+		this.logger = LoggerFactory.getLogger(UdpAssociateCommandWorker.class);
 		this.methodSubnegotiationResults = methSubnegotiationResults;		
 		this.netObjectFactory = netObjFactory;
 		this.rules = rls;
@@ -87,24 +82,24 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 		try {
 			socketSettings.applyTo(clientFacingDatagramSock);
 		} catch (UnsupportedOperationException e) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Error in setting the client-facing UDP socket"), 
 					e);
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return false;			
 		} catch (SocketException e) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Error in setting the client-facing UDP socket"), 
 					e);
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return false;
 		}
 		return true;
@@ -116,24 +111,24 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 		try {
 			socketSettings.applyTo(peerFacingDatagramSock);
 		} catch (UnsupportedOperationException e) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Error in setting the peer-facing UDP socket"), 
 					e);
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return false;			
 		} catch (SocketException e) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Error in setting the peer-facing UDP socket"), 
 					e);
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return false;
 		}
 		return true;
@@ -552,6 +547,48 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 		return null;
 	}
 	
+	private DatagramSocket limitClientFacingDatagramSocket(
+			final DatagramSocket clientFacingDatagramSock) {
+		Integer outboundBandwidthLimit = this.getRelayOutboundBandwidthLimit();
+		if (outboundBandwidthLimit != null) {
+			try {
+				return new BandwidthLimitedDatagramSocket(
+						clientFacingDatagramSock, 
+						outboundBandwidthLimit.intValue());
+			} catch (SocketException e) {
+				this.logger.error( 
+						ObjectLogMessageHelper.objectLogMessage(
+								this, 
+								"Error in creating the bandwidth-limited "
+								+ "client-facing UDP socket"), 
+						e);
+				return null;
+			}
+		}		
+		return clientFacingDatagramSock;
+	}
+	
+	private DatagramSocket limitPeerFacingDatagramSocket(
+			final DatagramSocket peerFacingDatagramSock) {
+		Integer inboundBandwidthLimit = this.getRelayInboundBandwidthLimit();
+		if (inboundBandwidthLimit != null) {
+			try {
+				return new BandwidthLimitedDatagramSocket(
+						peerFacingDatagramSock,
+						inboundBandwidthLimit.intValue());
+			} catch (SocketException e) {
+				this.logger.error( 
+						ObjectLogMessageHelper.objectLogMessage(
+								this, 
+								"Error in creating the bandwidth-limited "
+								+ "peer-facing UDP socket"), 
+						e);
+				return null;
+			}
+		}		
+		return peerFacingDatagramSock;
+	}
+	
 	private DatagramSocket newClientFacingDatagramSocket() {
 		Host bindHost = this.getClientFacingBindHost();
 		InetAddress bindInetAddress = bindHost.toInetAddress();
@@ -567,7 +604,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 				try {
 					clientFacingDatagramSock = new DatagramSocket(null);
 				} catch (SocketException e) {
-					LOGGER.error( 
+					this.logger.error( 
 							ObjectLogMessageHelper.objectLogMessage(
 									this, 
 									"Error in creating the client-facing UDP "
@@ -575,8 +612,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							e);
 					Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 							Reply.GENERAL_SOCKS_SERVER_FAILURE);
-					this.commandWorkerContext.sendSocks5Reply(
-							this, socks5Rep, LOGGER);
+					this.sendSocks5Reply(socks5Rep);
 					if (clientFacingDatagramSock != null 
 							&& !clientFacingDatagramSock.isClosed()) {
 						clientFacingDatagramSock.close();
@@ -595,7 +631,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 					clientFacingDatagramSock.close();
 					continue;
 				} catch (SocketException e) {
-					LOGGER.error( 
+					this.logger.error( 
 							ObjectLogMessageHelper.objectLogMessage(
 									this, 
 									"Error in binding the client-facing UDP "
@@ -603,8 +639,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							e);
 					Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 							Reply.GENERAL_SOCKS_SERVER_FAILURE);
-					this.commandWorkerContext.sendSocks5Reply(
-							this, socks5Rep, LOGGER);
+					this.sendSocks5Reply(socks5Rep);
 					clientFacingDatagramSock.close();
 					return null;
 				}
@@ -612,7 +647,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 			}
 		}
 		if (!clientFacingDatagramSockBound) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Unable to bind the client-facing UDP socket to "
@@ -622,8 +657,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							bindPortRanges));
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(
-					this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return null;			
 		}
 		return clientFacingDatagramSock;
@@ -645,7 +679,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 					peerFacingDatagramSock = 
 							this.netObjectFactory.newDatagramSocket(null);
 				} catch (SocketException e) {
-					LOGGER.error( 
+					this.logger.error( 
 							ObjectLogMessageHelper.objectLogMessage(
 									this, 
 									"Error in creating the peer-facing UDP "
@@ -653,8 +687,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							e);
 					Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 							Reply.GENERAL_SOCKS_SERVER_FAILURE);
-					this.commandWorkerContext.sendSocks5Reply(
-							this, socks5Rep, LOGGER);
+					this.sendSocks5Reply(socks5Rep);
 					if (peerFacingDatagramSock != null 
 							&& !peerFacingDatagramSock.isClosed()) {
 						peerFacingDatagramSock.close();
@@ -673,7 +706,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 					peerFacingDatagramSock.close();
 					continue;
 				} catch (SocketException e) {
-					LOGGER.error( 
+					this.logger.error( 
 							ObjectLogMessageHelper.objectLogMessage(
 									this, 
 									"Error in binding the peer-facing UDP "
@@ -681,8 +714,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							e);
 					Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 							Reply.GENERAL_SOCKS_SERVER_FAILURE);
-					this.commandWorkerContext.sendSocks5Reply(
-							this, socks5Rep, LOGGER);
+					this.sendSocks5Reply(socks5Rep);
 					peerFacingDatagramSock.close();
 					return null;
 				}
@@ -690,7 +722,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 			}
 		}
 		if (!peerFacingDatagramSockBound) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Unable to bind the peer-facing UDP socket to the "
@@ -699,19 +731,18 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 							bindPortRanges));
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return null;			
 		}
 		return peerFacingDatagramSock;
 	}
 
 	private void passPackets(
-			final UdpRelayServer.Builder builder) throws IOException {
-		UdpRelayServer udpRelayServer = builder.build();
+			final UdpRelayServer udpRelayServer) throws IOException {
 		try {
 			udpRelayServer.start();
 			try {
-				while (this.clientSocket.getInputStream().read() != -1) {
+				while (this.getClientSocket().getInputStream().read() != -1) {
 					try {
 						Thread.sleep(HALF_SECOND);
 					} catch (InterruptedException e) {
@@ -729,7 +760,7 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 	}
 	
 	@Override
-	public void run() throws IOException {
+	public void run() {
 		DatagramSocket peerFacingDatagramSock = null;
 		DatagramSocket clientFacingDatagramSock = null;		
 		Socks5Reply socks5Rep = null;
@@ -742,13 +773,17 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 			if (clientFacingDatagramSock == null) {
 				return;
 			}
+			/*
+			 * Create a temporary variable to avoid the resource-never-closed warning
+			 * (The resource will get closed)
+			 */
 			DatagramSocket clientFacingDatagramSck = 
 					this.wrapClientFacingDatagramSocket(
-							clientFacingDatagramSock); 
+							clientFacingDatagramSock);
 			if (clientFacingDatagramSck == null) {
 				return;
 			}
-			clientFacingDatagramSock = clientFacingDatagramSck;
+			clientFacingDatagramSock = clientFacingDatagramSck; 
 			InetAddress inetAddress =
 					clientFacingDatagramSock.getLocalAddress();
 			String serverBoundAddress = inetAddress.getHostAddress();
@@ -757,33 +792,32 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 					Reply.SUCCEEDED, 
 					serverBoundAddress, 
 					serverBoundPort);
-			RuleContext socks5ReplyRuleContext = 
-					this.commandWorkerContext.newSocks5ReplyRuleContext(
-							socks5Rep);
+			RuleContext socks5ReplyRuleContext = this.newSocks5ReplyRuleContext(
+					socks5Rep);
 			this.applicableRule = this.rules.firstAppliesTo(
 					socks5ReplyRuleContext);
-			if (!this.commandWorkerContext.canAllowSocks5Reply(
-					this, 
-					this.applicableRule, 
-					socks5ReplyRuleContext, 
-					LOGGER)) {
+			if (!this.canAllowSocks5Reply(
+					this.applicableRule, socks5ReplyRuleContext)) {
 				return;
 			}			
-			if (!this.commandWorkerContext.sendSocks5Reply(
-					this, socks5Rep, LOGGER)) {
+			if (!this.sendSocks5Reply(socks5Rep)) {
 				return;
 			}
-			Integer inboundBandwidthLimit = this.getRelayInboundBandwidthLimit();
-			Integer outboundBandwidthLimit = this.getRelayOutboundBandwidthLimit();
-			if (outboundBandwidthLimit != null) {
-				clientFacingDatagramSock = new BandwidthLimitedDatagramSocket(
-						clientFacingDatagramSock, 
-						outboundBandwidthLimit.intValue());
+			/*
+			 * Create a temporary variable to avoid the resource-never-closed warning
+			 * (The resource will get closed)
+			 */
+			DatagramSocket peerFacingDatagramSck = 
+					this.limitPeerFacingDatagramSocket(
+							peerFacingDatagramSock);
+			if (peerFacingDatagramSck == null) {
+				return;
 			}
-			if (inboundBandwidthLimit != null) {
-				peerFacingDatagramSock = new BandwidthLimitedDatagramSocket(
-						peerFacingDatagramSock,
-						inboundBandwidthLimit.intValue());
+			peerFacingDatagramSock = peerFacingDatagramSck; 
+			clientFacingDatagramSock = this.limitClientFacingDatagramSocket(
+					clientFacingDatagramSock);
+			if (clientFacingDatagramSock == null) {
+				return;
 			}
 			UdpRelayServer.Builder builder = new UdpRelayServer.Builder(
 					this.desiredDestinationAddress, 
@@ -795,10 +829,11 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 			builder.idleTimeout(this.getRelayIdleTimeout());
 			builder.ruleContext(socks5ReplyRuleContext);
 			builder.rules(this.rules);
+			UdpRelayServer udpRelayServer = builder.build();
 			try {
-				this.passPackets(builder);
+				this.passPackets(udpRelayServer);
 			} catch (IOException e) {
-				LOGGER.error( 
+				this.logger.error( 
 						ObjectLogMessageHelper.objectLogMessage(
 								this, "Error in starting the UDP association"), 
 						e);
@@ -824,15 +859,14 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 						this.clientFacingDtlsDatagramSocketFactory.newDatagramSocket(
 								clientFacingDatagramSck);
 			} catch (IOException e) {
-				LOGGER.error( 
+				this.logger.error( 
 						ObjectLogMessageHelper.objectLogMessage(
 								this, 
 								"Error in wrapping the client-facing UDP socket"), 
 						e);
 				Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 						Reply.GENERAL_SOCKS_SERVER_FAILURE);
-				this.commandWorkerContext.sendSocks5Reply(
-						this, socks5Rep, LOGGER);
+				this.sendSocks5Reply(socks5Rep);
 				return null;
 			}
 		}
@@ -841,14 +875,14 @@ final class UdpAssociateCommandWorker extends CommandWorker {
 					this.methodSubnegotiationResults.getDatagramSocket(
 							clientFacingDatagramSck);
 		} catch (IOException e) {
-			LOGGER.error( 
+			this.logger.error( 
 					ObjectLogMessageHelper.objectLogMessage(
 							this, 
 							"Error in wrapping the client-facing UDP socket"), 
 					e);
 			Socks5Reply socks5Rep = Socks5Reply.newFailureInstance(
 					Reply.GENERAL_SOCKS_SERVER_FAILURE);
-			this.commandWorkerContext.sendSocks5Reply(this, socks5Rep, LOGGER);
+			this.sendSocks5Reply(socks5Rep);
 			return null;
 		}
 		return clientFacingDatagramSck;

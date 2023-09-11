@@ -48,8 +48,9 @@
 -   [7. 13. 4. Allowing a Limited Number of Simultaneous Instances of Traffic](#7-13-4-allowing-a-limited-number-of-simultaneous-instances-of-traffic)
 -   [7. 13. 5. Routing Traffic](#7-13-5-routing-traffic)
 -   [7. 13. 6. Redirecting the Desired Destination](#7-13-6-redirecting-the-desired-destination)
--   [7. 13. 7. Limiting Bandwidth](#7-13-7-limiting-bandwidth)
--   [7. 13. 8. Configuring Sockets](#7-13-8-configuring-sockets)
+-   [7. 13. 7. Configuring Sockets](#7-13-7-configuring-sockets)
+-   [7. 13. 8. Configuring Relay Settings](#7-13-8-configuring-relay-settings)
+-   [7. 13. 9. Limiting Relay Bandwidth](#7-13-9-limiting-relay-bandwidth)
 -   [7. 14. Common Value Syntaxes](#7-14-common-value-syntaxes)
 -   [7. 14. 1. Address Range](#7-14-1-address-range)
 -   [7. 14. 2. Port Range](#7-14-2-port-range)
@@ -74,8 +75,9 @@ It also has a rule system that allows you to manage traffic in the following way
 -   Allow a limited number of simultaneous instances of traffic
 -   Route traffic through multiple selectable routes
 -   Redirect the desired destination
--   Limit bandwidth
 -   Configure sockets
+-   Configure relay settings
+-   Limit relay bandwidth
 
 **IMPLEMENTATION DETAIL**: Jargyle uses multiple threads for handling client connections. Under Java 19, it can use virtual threads instead of OS threads. To enable the use of virtual threads under Java 19, add the command line option `--enable-preview` to environment variable `JARGYLE_OPTS`
 
@@ -2859,10 +2861,10 @@ Partial configuration file example:
 
 #### 7. 13. 5. Routing Traffic
 
-To route traffic, you will need the following rule results:
+To route traffic, you can use the following rule results:
 
--   `routeSelectionStrategy`: Specifies the selection strategy for the next route
--   `selectableRouteId`: Specifies the ID for a selectable [route](#7-12-chaining-to-multiple-specified-chains-of-other-socks-servers) (This rule result is optional. This rule result can be specified multiple times with each rule result specifying another ID for a selectable route.)
+-   `routeSelectionStrategy`: Specifies the selection strategy for the next route (This rule result is optional. If this rule result is not specified, the setting `routeSelectionStrategy` is used.)
+-   `selectableRouteId`: Specifies the ID for a selectable [route](#7-12-chaining-to-multiple-specified-chains-of-other-socks-servers) (This rule result is optional. This rule result can be specified multiple times with each rule result specifying another ID for a selectable route. If this rule result is not specified, all of the routes defined by the settings `chaining.routeId` and `lastRouteId` are selectable.)
 
 These rule results can be used with the following rule conditions:
 
@@ -2878,7 +2880,7 @@ You can also specify the logging action to take if a route is selected by adding
 
 -   `routeSelectionLogAction`
 
-The rule result `routeSelectionLogAction` is optional.
+The rule result `routeSelectionLogAction` is optional. If the rule result is not specified, the setting `routeSelectionLogAction` is used.
 
 Partial command line example:
 
@@ -3033,95 +3035,7 @@ Partial configuration file example:
     
 ```
 
-#### 7. 13. 7. Limiting Bandwidth
-
-To limit the bandwidth, you will need any of the following rule results:
-
--   `socks5.onBind.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
--   `socks5.onBind.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
--   `socks5.onCommand.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
--   `socks5.onCommand.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
--   `socks5.onConnect.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
--   `socks5.onConnect.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
--   `socks5.onUdpAssociate.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
--   `socks5.onUdpAssociate.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
-
-The value given to any of the rule results must be an integer between 1 (inclusive) and 2147483647 (inclusive)
-
-These rule results can be used with the following rule conditions:
-
--   `clientAddress`
--   `socks5.command`
--   `socks5.desiredDestinationAddress`
--   `socks5.desiredDestinationPort`
--   `socks5.method`
--   `socks5.secondServerBoundAddress`
--   `socks5.secondServerBoundPort`
--   `socks5.serverBoundAddress`
--   `socks5.serverBoundPort`
--   `socks5.user`
--   `socksServerAddress`
-
-Partial command line example:
-
-```text
-    
-    "--setting=rule=socks5.command=CONNECT socks5.desiredDestinationAddress=streamingwebsite.com firewallAction=ALLOW socks5.onConnect.relayInboundBandwidthLimit=1024000 socks5.onConnect.relayOutboundBandwidthLimit=1024000" \
-    --setting=rule=firewallAction=ALLOW
-    
-```
-
-Partial configuration file example:
-
-```xml
-    
-    <setting>
-        <name>rule</name>
-        <rule>
-            <ruleConditions>
-                <ruleCondition>
-                    <name>socks5.command</name>
-                    <value>CONNECT</value>
-                </ruleCondition>            
-                <ruleCondition>
-                    <name>socks5.desiredDestinationAddress</name>
-                    <value>streamingwebsite.com</value>
-                </ruleCondition>
-            </ruleConditions>
-            <ruleResults>
-                <ruleResult>
-                    <name>firewallAction</name>
-                    <value>ALLOW</value>
-                </ruleResult>
-                <ruleResult>
-                    <name>socks5.onConnect.relayInboundBandwidthLimit</name>
-                    <value>1024000</value>
-                </ruleResult>
-                <ruleResult>
-                    <name>socks5.onConnect.relayOutboundBandwidthLimit</name>
-                    <value>1024000</value>
-                </ruleResult>                
-            </ruleResults>
-        </rule>
-        <!-- Allow the CONNECT command to connect to 'streamingwebsite.com' with an upper limit on bandwidth of 1024000 bytes per second -->
-    </setting>
-    <setting>
-        <name>rule</name>
-        <rule>
-            <ruleConditions/>
-            <ruleResults>
-                <ruleResult>
-                    <name>firewallAction</name>
-                    <value>ALLOW</value>
-                </ruleResult>
-            </ruleResults>
-        </rule>
-        <!-- Allow anything else -->
-    </setting>    
-    
-```
-
-#### 7. 13. 8. Configuring Sockets
+#### 7. 13. 7. Configuring Sockets
 
 To configure the sockets, you will need any of the following rule results:
 
@@ -3159,10 +3073,6 @@ To configure the sockets, you will need any of the following rule results:
 
 -   `socks5.onBind.listenSocketSetting`: Specifies a socket setting for the listen socket (This rule result can be specified multiple times with each rule result specifying another socket setting)
 
--   `socks5.onBind.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647  (inclusive))
-
--   `socks5.onBind.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
-
 -   `socks5.onCommand.bindHost`: Specifies the binding host name or address for all sockets
  
 -   `socks5.onCommand.bindTcpPortRange`: Specifies a binding [port range](#7-14-2-port-range) for all TCP sockets (This rule result can be specified multiple times with each rule result specifying another port range)
@@ -3185,18 +3095,9 @@ To configure the sockets, you will need any of the following rule results:
 
 -   `socks5.onCommand.internalFacingSocketSetting`: Specifies a socket setting for all internal-facing sockets (This rule result can be specified multiple times with each rule result specifying another socket setting)
 
--   `socks5.onCommand.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647  (inclusive))
-
--   `socks5.onCommand.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
-
 -   `socks5.onCommand.socketSetting`: Specifies a socket setting for all sockets (This rule result can be specified multiple times with each rule result specifying another socket setting)
 
 -   `socks5.onConnect.prepareServerFacingSocket`: Specifies the boolean value to indicate if the server-facing socket is to be prepared before connecting (involves applying the specified socket settings, resolving the target host name, and setting the specified timeout on waiting to connect)
-
--   `socks5.onConnect.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
-
--   `socks5.onConnect.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647
-(inclusive))
 
 -   `socks5.onConnect.serverFacingBindHost`: Specifies the binding host name or address for the server-facing socket
 
@@ -3218,10 +3119,6 @@ To configure the sockets, you will need any of the following rule results:
 
 -   `socks5.onUdpAssociate.peerFacingSocketSetting`: Specifies a socket setting for the peer-facing UDP socket (This rule result can be specified multiple times with each rule result specifying another socket setting)
 
--   `socks5.onUdpAssociate.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
-
--   `socks5.onUdpAssociate.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
-
 These rule results can be used with the following rule conditions:
 
 -   `clientAddress`
@@ -3229,12 +3126,13 @@ These rule results can be used with the following rule conditions:
 -   `socks5.desiredDestinationAddress`
 -   `socks5.desiredDestinationPort`
 -   `socks5.method`
--   `socks5.secondServerBoundAddress`
--   `socks5.secondServerBoundPort`
--   `socks5.serverBoundAddress`
--   `socks5.serverBoundPort`
 -   `socks5.user`
 -   `socksServerAddress`
+
+The rule result `socks5.onBind.inboundSocketSetting` can also be used with the following rule conditions:
+
+-   `socks5.serverBoundAddress`
+-   `socks5.serverBoundPort`
 
 Partial command line example:
 
@@ -3302,6 +3200,184 @@ Partial configuration file example:
         </rule>
         <!-- Allow anything else -->
     </setting>
+    
+```
+
+#### 7. 13. 8. Configuring Relay Settings
+
+To configure the relay settings, you will need any of the following rule results:
+
+-   `socks5.onBind.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647  (inclusive))
+
+-   `socks5.onBind.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
+
+-   `socks5.onCommand.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647  (inclusive))
+
+-   `socks5.onCommand.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
+
+-   `socks5.onConnect.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
+
+-   `socks5.onConnect.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647
+(inclusive))
+
+-   `socks5.onUdpAssociate.relayBufferSize`: Specifies the buffer size in bytes for relaying the data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
+
+-   `socks5.onUdpAssociate.relayIdleTimeout`: Specifies the timeout in milliseconds on relaying no data (Value must be an integer between 1 (inclusive) and 2147483647 (inclusive))
+
+These rule results can be used with the following rule conditions:
+
+-   `clientAddress`
+-   `socks5.command`
+-   `socks5.desiredDestinationAddress`
+-   `socks5.desiredDestinationPort`
+-   `socks5.method`
+-   `socks5.secondServerBoundAddress`
+-   `socks5.secondServerBoundPort`
+-   `socks5.serverBoundAddress`
+-   `socks5.serverBoundPort`
+-   `socks5.user`
+-   `socksServerAddress`
+
+Partial command line example:
+
+```text
+    
+    "--setting=rule=socks5.command=CONNECT socks5.desiredDestinationAddress=intermittent-idling-server.com firewallAction=ALLOW socks5.onConnect.relayIdleTimeout=1024000" \
+    --setting=rule=firewallAction=ALLOW
+    
+```
+
+Partial configuration file example:
+
+```xml
+    
+    <setting>
+        <name>rule</name>
+        <rule>
+            <ruleConditions>
+                <ruleCondition>
+                    <name>socks5.command</name>
+                    <value>CONNECT</value>
+                </ruleCondition>            
+                <ruleCondition>
+                    <name>socks5.desiredDestinationAddress</name>
+                    <value>intermittent-idling-server.com</value>
+                </ruleCondition>
+            </ruleConditions>
+            <ruleResults>
+                <ruleResult>
+                    <name>firewallAction</name>
+                    <value>ALLOW</value>
+                </ruleResult>
+                <ruleResult>
+                    <name>socks5.onConnect.relayIdleTimeout</name>
+                    <value>1024000</value>
+                </ruleResult>
+            </ruleResults>
+        </rule>
+        <!-- Allow the CONNECT command to connect to 'intermittent-idling-server.com' with a relay idle timeout of 1024000 milliseconds (1024 seconds) -->
+    </setting>
+    <setting>
+        <name>rule</name>
+        <rule>
+            <ruleConditions/>
+            <ruleResults>
+                <ruleResult>
+                    <name>firewallAction</name>
+                    <value>ALLOW</value>
+                </ruleResult>
+            </ruleResults>
+        </rule>
+        <!-- Allow anything else -->
+    </setting>    
+    
+```
+
+#### 7. 13. 9. Limiting Relay Bandwidth
+
+To limit the relay bandwidth, you will need any of the following rule results:
+
+-   `socks5.onBind.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
+-   `socks5.onBind.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
+-   `socks5.onCommand.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
+-   `socks5.onCommand.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
+-   `socks5.onConnect.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
+-   `socks5.onConnect.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
+-   `socks5.onUdpAssociate.relayInboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving inbound data to be relayed
+-   `socks5.onUdpAssociate.relayOutboundBandwidthLimit`: Specifies the upper limit on bandwidth in bytes per second of receiving outbound data to be relayed
+
+The value given to any of the rule results must be an integer between 1 (inclusive) and 2147483647 (inclusive)
+
+These rule results can be used with the following rule conditions:
+
+-   `clientAddress`
+-   `socks5.command`
+-   `socks5.desiredDestinationAddress`
+-   `socks5.desiredDestinationPort`
+-   `socks5.method`
+-   `socks5.secondServerBoundAddress`
+-   `socks5.secondServerBoundPort`
+-   `socks5.serverBoundAddress`
+-   `socks5.serverBoundPort`
+-   `socks5.user`
+-   `socksServerAddress`
+
+Partial command line example:
+
+```text
+    
+    "--setting=rule=socks5.command=CONNECT socks5.desiredDestinationAddress=streamingwebsite.com firewallAction=ALLOW socks5.onConnect.relayInboundBandwidthLimit=1024000 socks5.onConnect.relayOutboundBandwidthLimit=1024000" \
+    --setting=rule=firewallAction=ALLOW
+    
+```
+
+Partial configuration file example:
+
+```xml
+    
+    <setting>
+        <name>rule</name>
+        <rule>
+            <ruleConditions>
+                <ruleCondition>
+                    <name>socks5.command</name>
+                    <value>CONNECT</value>
+                </ruleCondition>            
+                <ruleCondition>
+                    <name>socks5.desiredDestinationAddress</name>
+                    <value>streamingwebsite.com</value>
+                </ruleCondition>
+            </ruleConditions>
+            <ruleResults>
+                <ruleResult>
+                    <name>firewallAction</name>
+                    <value>ALLOW</value>
+                </ruleResult>
+                <ruleResult>
+                    <name>socks5.onConnect.relayInboundBandwidthLimit</name>
+                    <value>1024000</value>
+                </ruleResult>
+                <ruleResult>
+                    <name>socks5.onConnect.relayOutboundBandwidthLimit</name>
+                    <value>1024000</value>
+                </ruleResult>                
+            </ruleResults>
+        </rule>
+        <!-- Allow the CONNECT command to connect to 'streamingwebsite.com' with an upper limit on the relay inbound and outbound bandwidth of 1024000 bytes per second -->
+    </setting>
+    <setting>
+        <name>rule</name>
+        <rule>
+            <ruleConditions/>
+            <ruleResults>
+                <ruleResult>
+                    <name>firewallAction</name>
+                    <value>ALLOW</value>
+                </ruleResult>
+            </ruleResults>
+        </rule>
+        <!-- Allow anything else -->
+    </setting>    
     
 ```
 
