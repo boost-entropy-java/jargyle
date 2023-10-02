@@ -20,21 +20,24 @@ public final class DatagramEchoServer {
 		
 		public void run() {
 			ExecutorService executor = ExecutorHelper.newExecutor();
-			while (true) {
-				try {
-					byte[] buffer = new byte[BUFFER_SIZE];
-					DatagramPacket packet = new DatagramPacket(
-							buffer, buffer.length);
-					this.serverSocket.receive(packet);
-					executor.execute(new Worker(this.serverSocket, packet));
-				} catch (SocketException e) {
-					break;
-				} catch (IOException e) {
-					e.printStackTrace();
-					break;
+			try {
+				while (true) {
+					try {
+						byte[] buffer = new byte[BUFFER_SIZE];
+						DatagramPacket packet = new DatagramPacket(
+								buffer, buffer.length);
+						this.serverSocket.receive(packet);
+						executor.execute(new Worker(this.serverSocket, packet));
+					} catch (SocketException e) {
+						break;
+					} catch (IOException e) {
+						e.printStackTrace();
+						break;
+					}
 				}
+			} finally {
+				executor.shutdownNow();
 			}
-			executor.shutdownNow();
 		}
 		
 	}

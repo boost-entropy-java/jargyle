@@ -32,32 +32,36 @@ public final class Listener implements Runnable {
 	
 	public void run() {
 		ExecutorService executor = ExecutorHelper.newExecutor();
-		while (true) {
-			try {
-				Socket clientSocket = this.serverSocket.accept();
-				executor.execute(new Worker(
-						clientSocket,
-						this.currentWorkerCount,
-						this.configuredWorkerParamsProvider));
-			} catch (SocketTimeoutException e) {
-				this.logger.error(
-						ObjectLogMessageHelper.objectLogMessage(
-								this, 
-								"Timeout reached in waiting for a connection!"), 
-						e);
-				continue;				
-			} catch (SocketException e) {
-				// closed by SocksServer.stop()
-				break;
-			} catch (IOException e) {
-				this.logger.error(
-						ObjectLogMessageHelper.objectLogMessage(
-								this, "Error in waiting for a connection"), 
-						e);
-				continue;
+		try {
+			while (true) {
+				try {
+					Socket clientSocket = this.serverSocket.accept();
+					executor.execute(new Worker(
+							clientSocket,
+							this.currentWorkerCount,
+							this.configuredWorkerParamsProvider));
+				} catch (SocketTimeoutException e) {
+					this.logger.error(
+							ObjectLogMessageHelper.objectLogMessage(
+									this, 
+									"Timeout reached in waiting for a "
+									+ "connection!"), 
+							e);
+					continue;				
+				} catch (SocketException e) {
+					// closed by SocksServer.stop()
+					break;
+				} catch (IOException e) {
+					this.logger.error(
+							ObjectLogMessageHelper.objectLogMessage(
+									this, "Error in waiting for a connection"), 
+							e);
+					continue;
+				}
 			}
+		} finally {
+			executor.shutdownNow();
 		}
-		executor.shutdownNow();
 	}
 
 	@Override
