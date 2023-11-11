@@ -6,24 +6,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class Users {
 	
 	public static Users newInstance(final List<User> users) {
 		return new Users(users);
-	}
-	
-	public static Users newInstance(final String s) {
-		List<User> users = new ArrayList<User>();
-		if (s.isEmpty()) {
-			return newInstance(users);
-		}
-		String[] sElements = s.split(" ");
-		for (String sElement : sElements) {
-			User user = User.newInstance(sElement);
-			users.add(user);
-		}
-		return newInstance(users);
 	}
 	
 	public static Users newInstance(final User... users) {
@@ -32,6 +20,36 @@ public final class Users {
 	
 	public static Users newInstance(final Users users) {
 		return new Users(users);
+	}
+	
+	public static Users newInstanceOfStringContainingHashedPasswords(
+			final String s) {
+		List<User> users = new ArrayList<User>();
+		if (s.isEmpty()) {
+			return newInstance(users);
+		}
+		String[] sElements = s.split(",");
+		for (String sElement : sElements) {
+			User user = User.newInstanceOfStringContainingHashedPassword(
+					sElement);
+			users.add(user);
+		}
+		return newInstance(users);
+	}
+	
+	public static Users newInstanceOfStringContainingPlaintextPasswords(
+			final String s) {
+		List<User> users = new ArrayList<User>();
+		if (s.isEmpty()) {
+			return newInstance(users);
+		}
+		String[] sElements = s.split(",");
+		for (String sElement : sElements) {
+			User user = User.newInstanceOfStringContainingPlaintextPassword(
+					sElement);
+			users.add(user);
+		}
+		return newInstance(users);
 	}
 
 	private final Map<String, User> users;
@@ -110,11 +128,8 @@ public final class Users {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(this.getClass().getSimpleName())
-			.append(" [users=")
-			.append(this.users)
-			.append("]");
-		return builder.toString();
+		return this.users.values().stream()
+				.map(User::toString)
+				.collect(Collectors.joining(","));
 	}	
 }
