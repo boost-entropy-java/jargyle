@@ -1,7 +1,7 @@
 package com.github.jh3nd3rs0n.jargyle.cli;
 
 import java.io.File;
-import java.lang.reflect.Field;
+import java.io.PrintWriter;
 
 import com.github.jh3nd3rs0n.argmatey.ArgMatey;
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.Annotations.Option;
@@ -13,32 +13,15 @@ import com.github.jh3nd3rs0n.argmatey.ArgMatey.OptionType;
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.OptionUsageParams;
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.OptionUsageProvider;
 import com.github.jh3nd3rs0n.argmatey.ArgMatey.TerminationRequestedException;
-import com.github.jh3nd3rs0n.jargyle.client.SchemeConstants;
-import com.github.jh3nd3rs0n.jargyle.common.net.StandardSocketSettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.common.security.EncryptedPassword;
-import com.github.jh3nd3rs0n.jargyle.internal.annotation.HelpText;
-import com.github.jh3nd3rs0n.jargyle.protocolbase.socks5.Command;
-import com.github.jh3nd3rs0n.jargyle.protocolbase.socks5.Method;
-import com.github.jh3nd3rs0n.jargyle.protocolbase.socks5.gssapimethod.ProtectionLevel;
 import com.github.jh3nd3rs0n.jargyle.server.ChainingDtlsSettingSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.ChainingGeneralSettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.server.ChainingSocks5SettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.server.ChainingSslSettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.server.Configuration;
 import com.github.jh3nd3rs0n.jargyle.server.ConfigurationRepository;
 import com.github.jh3nd3rs0n.jargyle.server.DtlsSettingSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.FirewallAction;
-import com.github.jh3nd3rs0n.jargyle.server.GeneralRuleConditionSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.GeneralRuleResultSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.GeneralSettingSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.LogAction;
-import com.github.jh3nd3rs0n.jargyle.server.SelectionStrategySpecConstants;
 import com.github.jh3nd3rs0n.jargyle.server.Setting;
-import com.github.jh3nd3rs0n.jargyle.server.Socks5RuleConditionSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.Socks5RuleResultSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.Socks5SettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.server.SslSettingSpecConstants;
-import com.github.jh3nd3rs0n.jargyle.server.socks5.userpassmethod.UserRepositorySpecConstants;
 
 public abstract class ServerConfigurationCLI extends CLI {
 	
@@ -159,27 +142,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 	@Ordinal(HELP_OPTION_GROUP_ORDINAL)
 	@Override
 	protected void displayProgramHelp() throws TerminationRequestedException {
-		String progOperandsUsage = this.getProgramOperandsUsage();
-		ArgMatey.Option helpOption = this.getOptionGroups().get(
-				HELP_OPTION_GROUP_ORDINAL).get(0);
-		ArgMatey.Option settingsHelpOption = this.getOptionGroups().get(
-				SETTINGS_HELP_OPTION_GROUP_ORDINAL).get(0);
-		System.out.printf("Usage: %s [OPTIONS]", 
-				this.programBeginningUsage);
-		if (progOperandsUsage != null && !progOperandsUsage.isEmpty()) {
-			System.out.printf(" %s", progOperandsUsage);
-		}
-		System.out.println();
-		System.out.printf("       %s %s%n", 
-				this.programBeginningUsage, 
-				helpOption.getUsage());
-		System.out.printf("       %s %s%n", 
-				this.programBeginningUsage, 
-				settingsHelpOption.getUsage());
-		System.out.println();
-		System.out.println("OPTIONS:");
-		this.getOptionGroups().printHelpText();
-		System.out.println();
+		this.printProgramHelp(new PrintWriter(System.out, true));
 		throw new TerminationRequestedException(0);
 	}
 	
@@ -187,6 +150,22 @@ public abstract class ServerConfigurationCLI extends CLI {
 	protected void displayProgramVersion() 
 			throws TerminationRequestedException { 
 		throw new UnsupportedOperationException("not implemented");
+	}
+	
+	@Option(
+			doc = "Print the list of available settings for the SOCKS "
+					+ "server and exit",
+			name = "settings-help",
+			type = OptionType.GNU_LONG
+	)
+	@Option(
+			name = "H",
+			type = OptionType.POSIX
+	)
+	@Ordinal(SETTINGS_HELP_OPTION_GROUP_ORDINAL)
+	protected void displaySettingsHelp() throws TerminationRequestedException {
+		this.printSettingsHelp(new PrintWriter(System.out, true));
+		throw new TerminationRequestedException(0);
 	}
 	
 	@Option(
@@ -259,7 +238,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 						encryptedPassword);
 		this.configuration.addSetting(setting);
 	}
-
+	
 	@Option(
 			doc = "Enter through an interactive prompt the password for the "
 					+ "trust store for the SSL/TLS connections to the other "
@@ -277,7 +256,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 						encryptedPassword);
 		this.configuration.addSetting(setting);
 	}
-		
+
 	@Option(
 			doc = "Enter through an interactive prompt the password for the "
 					+ "key store for the DTLS connections to the SOCKS "
@@ -295,7 +274,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 						encryptedPassword);
 		this.configuration.addSetting(setting);		
 	}
-	
+		
 	@Option(
 			doc = "Enter through an interactive prompt the password for the "
 					+ "trust store for the DTLS connections to the SOCKS "
@@ -313,7 +292,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 						encryptedPassword);
 		this.configuration.addSetting(setting);		
 	}
-		
+	
 	@Option(
 			doc = "Enter through an interactive prompt the password for the "
 					+ "key store for the SSL/TLS connections to the SOCKS "
@@ -331,7 +310,7 @@ public abstract class ServerConfigurationCLI extends CLI {
 						encryptedPassword);
 		this.configuration.addSetting(setting);		
 	}
-	
+		
 	@Option(
 			doc = "Enter through an interactive prompt the password for the "
 					+ "trust store for the SSL/TLS connections to the SOCKS "
@@ -388,91 +367,32 @@ public abstract class ServerConfigurationCLI extends CLI {
 		throw new TerminationRequestedException(-1);
 	}
 	
-	private void printHelpText(final Class<?> cls) {
-		System.out.println();
-		Field[] fields = cls.getDeclaredFields();
-		for (Field field : fields) {
-			HelpText helpText = field.getAnnotation(HelpText.class);
-			if (helpText != null) {
-				System.out.print("    ");
-				System.out.println(helpText.usage());
-				String doc = helpText.doc();
-				if (!doc.isEmpty()) {
-					System.out.print("        ");
-					System.out.println(doc);
-				}
-				System.out.println();
-			}
+	final void printProgramHelp(final PrintWriter pw) {
+		String progOperandsUsage = this.getProgramOperandsUsage();
+		ArgMatey.Option helpOption = this.getOptionGroups().get(
+				HELP_OPTION_GROUP_ORDINAL).get(0);
+		ArgMatey.Option settingsHelpOption = this.getOptionGroups().get(
+				SETTINGS_HELP_OPTION_GROUP_ORDINAL).get(0);
+		pw.printf("Usage: %s [OPTIONS]", 
+				this.programBeginningUsage);
+		if (progOperandsUsage != null && !progOperandsUsage.isEmpty()) {
+			pw.printf(" %s", progOperandsUsage);
 		}
+		pw.println();
+		pw.printf("       %s %s%n", 
+				this.programBeginningUsage, 
+				helpOption.getUsage());
+		pw.printf("       %s %s%n", 
+				this.programBeginningUsage, 
+				settingsHelpOption.getUsage());
+		pw.println();
+		pw.println("OPTIONS:");
+		this.getOptionGroups().printHelpText(pw);
+		pw.println();
 	}
 	
-	private void printSettings() {
-		System.out.println("SETTINGS:");
-		System.out.println();		
-		System.out.println("  GENERAL SETTINGS:");
-		this.printHelpText(GeneralSettingSpecConstants.class);
-		System.out.println("  CHAINING GENERAL SETTINGS:");
-		this.printHelpText(ChainingGeneralSettingSpecConstants.class);
-		System.out.println("  CHAINING DTLS SETTINGS:");
-		this.printHelpText(ChainingDtlsSettingSpecConstants.class);
-		System.out.println("  CHAINING SOCKS5 SETTINGS:");
-		this.printHelpText(ChainingSocks5SettingSpecConstants.class);
-		System.out.println("  CHAINING SSL SETTINGS:");
-		this.printHelpText(ChainingSslSettingSpecConstants.class);		
-		System.out.println("  DTLS SETTINGS:");
-		this.printHelpText(DtlsSettingSpecConstants.class);
-		System.out.println("  SOCKS5 SETTINGS:");
-		this.printHelpText(Socks5SettingSpecConstants.class);
-		System.out.println("  SSL SETTINGS:");
-		this.printHelpText(SslSettingSpecConstants.class);
-	}
-	
-	@Option(
-			doc = "Print the list of available settings for the SOCKS "
-					+ "server and exit",
-			name = "settings-help",
-			type = OptionType.GNU_LONG
-	)
-	@Option(
-			name = "H",
-			type = OptionType.POSIX
-	)
-	@Ordinal(SETTINGS_HELP_OPTION_GROUP_ORDINAL)
-	protected void printSettingsHelp() throws TerminationRequestedException {
-		this.printSettings();
-		this.printSettingValueSyntaxes();
-		throw new TerminationRequestedException(0);
-	}
-	
-	private void printSettingValueSyntaxes() {
-		System.out.println("SETTING VALUE SYNTAXES:");
-		System.out.println();
-		System.out.println("  FIREWALL_ACTIONS:");
-		this.printHelpText(FirewallAction.class);
-		System.out.println("  GENERAL_RULE_CONDITIONS:");
-		this.printHelpText(GeneralRuleConditionSpecConstants.class);
-		System.out.println("  GENERAL_RULE_RESULTS:");
-		this.printHelpText(GeneralRuleResultSpecConstants.class);
-		System.out.println("  LOG_ACTIONS:");
-		this.printHelpText(LogAction.class);
-		System.out.println("  SCHEMES:");
-		this.printHelpText(SchemeConstants.class);
-		System.out.println("  SELECTION_STRATEGIES:");
-		this.printHelpText(SelectionStrategySpecConstants.class);
-		System.out.println("  SOCKET_SETTINGS:");
-		this.printHelpText(StandardSocketSettingSpecConstants.class);
-		System.out.println("  SOCKS5_COMMANDS:");
-		this.printHelpText(Command.class);
-		System.out.println("  SOCKS5_GSSAPIMETHOD_PROTECTION_LEVELS:");
-		this.printHelpText(ProtectionLevel.class);
-		System.out.println("  SOCKS5_METHODS:");
-		this.printHelpText(Method.class);
-		System.out.println("  SOCKS5_RULE_CONDITIONS:");
-		this.printHelpText(Socks5RuleConditionSpecConstants.class);		
-		System.out.println("  SOCKS5_RULE_RESULTS:");
-		this.printHelpText(Socks5RuleResultSpecConstants.class);
-		System.out.println("  SOCKS5_USERPASSMETHOD_USER_REPOSITORIES:");
-		this.printHelpText(UserRepositorySpecConstants.class);
+	void printSettingsHelp(final PrintWriter pw) {
+		new SettingsHelpPrinter().printSettingsHelp(pw);
 	}
 	
 	private EncryptedPassword readEncryptedPassword(final String prompt) {

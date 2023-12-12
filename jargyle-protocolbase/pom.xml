@@ -9,8 +9,8 @@
 		<version>5.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>jargyle-protocolbase</artifactId>
-	<name>jargyle-protocolbase</name>
-	<description></description>
+	<name>Jargyle Protocolbase</name>
+	<description>Foundational API for the SOCKS client and server API</description>
 	<properties>
 		<docsDirectory>${project.basedir}${file.separator}..${file.separator}docs</docsDirectory>
 	</properties>
@@ -25,39 +25,5 @@
 			<artifactId>jargyle-internal</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.github.jh3nd3rs0n</groupId>
-			<artifactId>test-help</artifactId>
-			<version>${project.parent.version}</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-site-plugin</artifactId>
-				<!-- TODO: Remove when documentation and deployment for this module is complete --> 
-				<configuration>
-					<skip>true</skip>
-					<skipDeploy>true</skipDeploy>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<reporting>
-		<plugins>
-			<plugin>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>index</report>							
-							<report>dependencies</report>
-							<report>dependency-info</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-		</plugins>
-	</reporting>
 </project>
