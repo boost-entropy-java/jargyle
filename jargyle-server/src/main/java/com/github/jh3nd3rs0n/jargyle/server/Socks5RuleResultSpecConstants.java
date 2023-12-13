@@ -7,7 +7,6 @@ import com.github.jh3nd3rs0n.jargyle.common.net.Host;
 import com.github.jh3nd3rs0n.jargyle.common.net.Port;
 import com.github.jh3nd3rs0n.jargyle.common.net.PortRange;
 import com.github.jh3nd3rs0n.jargyle.common.net.SocketSetting;
-import com.github.jh3nd3rs0n.jargyle.common.net.StandardSocketSettingSpecConstants;
 import com.github.jh3nd3rs0n.jargyle.common.number.PositiveInteger;
 import com.github.jh3nd3rs0n.jargyle.internal.annotation.NameValuePairValueSpecDoc;
 import com.github.jh3nd3rs0n.jargyle.internal.annotation.NameValuePairValueSpecsDoc;
@@ -63,7 +62,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "specifying another socket setting)",
 			name = "socks5.onBind.inboundSocketSetting",
 			syntax = "socks5.onBind.inboundSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)	
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_BIND_INBOUND_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onBind.inboundSocketSetting"));
@@ -96,7 +95,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "specifying another socket setting)",
 			name = "socks5.onBind.listenSocketSetting",
 			syntax = "socks5.onBind.listenSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)	
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_BIND_LISTEN_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onBind.listenSocketSetting"));
@@ -213,7 +212,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "result specifying another socket setting)",
 			name = "socks5.onCommand.externalFacingSocketSetting",
 			syntax = "socks5.onCommand.externalFacingSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_COMMAND_EXTERNAL_FACING_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onCommand.externalFacingSocketSetting"));
@@ -227,19 +226,7 @@ public final class Socks5RuleResultSpecConstants {
 	)
 	public static final RuleResultSpec<Host> SOCKS5_ON_COMMAND_INTERNAL_FACING_BIND_HOST = RULE_RESULT_SPECS.addThenGet(new HostRuleResultSpec(
 			"socks5.onCommand.internalFacingBindHost"));
-	
-	@NameValuePairValueSpecDoc(
-			description = "Specifies a binding port range for all "
-					+ "internal-facing TCP sockets (can be specified multiple "
-					+ "times with each rule result specifying another port "
-					+ "range)",
-			name = "socks5.onCommand.internalFacingBindTcpPortRange",
-			syntax = "socks5.onCommand.internalFacingBindTcpPortRange=PORT_RANGE",
-			valueType = PortRange.class
-	)
-	public static final RuleResultSpec<PortRange> SOCKS5_ON_COMMAND_INTERNAL_FACING_BIND_TCP_PORT_RANGE = RULE_RESULT_SPECS.addThenGet(new PortRangeRuleResultSpec(
-			"socks5.onCommand.internalFacingBindTcpPortRange"));
-	
+
 	@NameValuePairValueSpecDoc(
 			description = "Specifies a binding port range for all "
 					+ "internal-facing UDP sockets (can be specified multiple "
@@ -258,7 +245,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "result specifying another socket setting)",
 			name = "socks5.onCommand.internalFacingSocketSetting",
 			syntax = "socks5.onCommand.internalFacingSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_COMMAND_INTERNAL_FACING_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onCommand.internalFacingSocketSetting"));
@@ -309,7 +296,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "specifying another socket setting)",
 			name = "socks5.onCommand.socketSetting",
 			syntax = "socks5.onCommand.socketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_COMMAND_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onCommand.socketSetting"));
@@ -404,7 +391,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "result specifying another socket setting)",
 			name = "socks5.onConnect.serverFacingSocketSetting",
 			syntax = "socks5.onConnect.serverFacingSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)	
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_CONNECT_SERVER_FACING_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onConnect.serverFacingSocketSetting"));
@@ -436,7 +423,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "result specifying another socket setting)",
 			name = "socks5.onUdpAssociate.clientFacingSocketSetting",
 			syntax = "socks5.onUdpAssociate.clientFacingSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)	
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_UDP_ASSOCIATE_CLIENT_FACING_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onUdpAssociate.clientFacingSocketSetting"));
@@ -468,7 +455,7 @@ public final class Socks5RuleResultSpecConstants {
 					+ "result specifying another socket setting)",
 			name = "socks5.onUdpAssociate.peerFacingSocketSetting",
 			syntax = "socks5.onUdpAssociate.peerFacingSocketSetting=SOCKET_SETTING",
-			valueType = StandardSocketSettingSpecConstants.class
+			valueType = SocketSetting.class
 	)	
 	public static final RuleResultSpec<SocketSetting<Object>> SOCKS5_ON_UDP_ASSOCIATE_PEER_FACING_SOCKET_SETTING = RULE_RESULT_SPECS.addThenGet(new SocketSettingRuleResultSpec(
 			"socks5.onUdpAssociate.peerFacingSocketSetting"));
