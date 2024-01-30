@@ -6,43 +6,43 @@ import org.junit.Test;
 public class HostTest {
 
     @Test
-    public void testNewInstanceOfString01() {
-        Assert.assertNotNull(Host.newInstanceOf("127.0.0.1"));
+    public void testNewInstanceString01() {
+        Assert.assertNotNull(Host.newInstance("127.0.0.1"));
     }
 
     @Test
-    public void testNewInstanceOfString02() {
-        Assert.assertNotNull(Host.newInstanceOf("::1"));
+    public void testNewInstanceString02() {
+        Assert.assertNotNull(Host.newInstance("::1"));
     }
 
     @Test
-    public void testNewInstanceOfString03() {
-        Assert.assertNotNull(Host.newInstanceOf("localhost"));
+    public void testNewInstanceString03() {
+        Assert.assertNotNull(Host.newInstance("localhost"));
     }
 
     @Test
-    public void testNewInstanceOfString04() {
-        Assert.assertNotNull(Host.newInstanceOf("google.com"));
+    public void testNewInstanceString04() {
+        Assert.assertNotNull(Host.newInstance("google.com"));
     }
 
     @Test
-    public void testNewInstanceOfString05() {
-        Assert.assertNotNull(Host.newInstanceOf("jh3nd3rs0n.github.io"));
+    public void testNewInstanceString05() {
+        Assert.assertNotNull(Host.newInstance("jh3nd3rs0n.github.io"));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNewInstanceOfStringForIllegalArgumentException01() {
-        Host.newInstanceOf("@#$*()@#");
+    public void testNewInstanceStringForIllegalArgumentException01() {
+        Host.newInstance("@#$*()@#");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testNewInstanceOfStringForIllegalArgumentException02() {
-        Host.newInstanceOf("LOCALHOST");
+    public void testNewInstanceStringForIllegalArgumentException02() {
+        Host.newInstance("LOCALHOST");
     }
 
     @Test
     public void testToString() {
-        Host host = Host.newInstanceOf("localhost");
+        Host host = Host.newInstance("localhost");
         Assert.assertEquals("localhost", host.toString());
     }
 
