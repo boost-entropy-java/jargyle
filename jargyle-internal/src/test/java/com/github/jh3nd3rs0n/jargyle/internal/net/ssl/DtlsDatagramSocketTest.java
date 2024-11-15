@@ -2,9 +2,9 @@ package com.github.jh3nd3rs0n.jargyle.internal.net.ssl;
 
 import com.github.jh3nd3rs0n.jargyle.internal.VirtualThreadPerTaskExecutorOrCachedThreadPoolFactory;
 import com.github.jh3nd3rs0n.jargyle.internal.VirtualThreadPerTaskExecutorOrDoubleThreadPoolFactory;
-import com.github.jh3nd3rs0n.jargyle.test.help.net.DatagramTestServer;
-import com.github.jh3nd3rs0n.jargyle.test.help.security.TestKeyStoreResourceConstants;
-import com.github.jh3nd3rs0n.jargyle.test.help.string.TestStringConstants;
+import com.github.jh3nd3rs0n.test.help.net.DatagramServer;
+import com.github.jh3nd3rs0n.test.help.security.KeyStoreResourceConstants;
+import com.github.jh3nd3rs0n.test.help.string.StringConstants;
 import org.junit.*;
 import org.junit.rules.Timeout;
 
@@ -23,12 +23,12 @@ import java.util.concurrent.TimeUnit;
 public class DtlsDatagramSocketTest {
 
     private static final int RECEIVE_BUFFER_SIZE =
-            DatagramTestServer.RECEIVE_BUFFER_SIZE;
+            DatagramServer.RECEIVE_BUFFER_SIZE;
 
     private static SSLContext clientDtlsContextUsingDtlsv1point2;
 
-    private static DatagramTestServer echoDtlsDatagramTestServerUsingDtlsv1point2;
-    private static int echoDtlsDatagramTestServerPortUsingDtlsv1point2;
+    private static DatagramServer echoDtlsDatagramServerUsingDtlsv1Point2;
+    private static int echoDtlsDatagramServerPortUsingDtlsv1point2;
 
     @Rule
     public Timeout globalTimeout = Timeout.builder()
@@ -39,7 +39,7 @@ public class DtlsDatagramSocketTest {
     private static String echo(
             final ClientDtlsDatagramSocketFactory clientDtlsDatagramSocketFactory,
             final String string,
-            final int echoDtlsDatagramEchoServerPort) throws IOException {
+            final int echoDtlsEchoDatagramServerPort) throws IOException {
         String returningString;
         try (DatagramSocket dtlsDatagramSocket =
                      clientDtlsDatagramSocketFactory.newClientDatagramSocket()) {
@@ -47,8 +47,8 @@ public class DtlsDatagramSocketTest {
             DatagramPacket packet = new DatagramPacket(
                     stringBytes,
                     stringBytes.length,
-                    DatagramTestServer.INET_ADDRESS,
-                    echoDtlsDatagramEchoServerPort);
+                    DatagramServer.INET_ADDRESS,
+                    echoDtlsEchoDatagramServerPort);
             dtlsDatagramSocket.send(packet);
             byte[] buffer = new byte[RECEIVE_BUFFER_SIZE];
             packet = new DatagramPacket(buffer, buffer.length);
@@ -61,9 +61,9 @@ public class DtlsDatagramSocketTest {
         return returningString;
     }
 
-    private static DatagramTestServer newEchoDtlsDatagramTestServer(
+    private static DatagramServer newEchoDtlsDatagramServer(
             final ServerDtlsDatagramSocketFactory serverDtlsDatagramSocketFactory) {
-        return new DatagramTestServer(
+        return new DatagramServer(
                 serverDtlsDatagramSocketFactory,
                 0,
                 new VirtualThreadPerTaskExecutorOrDoubleThreadPoolFactory(),
@@ -80,82 +80,82 @@ public class DtlsDatagramSocketTest {
                 "DTLSv1.2",
                 null,
                 TrustManagerHelper.getTrustManagers(
-                        TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                        TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                        KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                        KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                         null));
 
         SSLContext serverDtlsContextUsingDtlsv1point2 = SslContextHelper.getSslContext(
                 "DTLSv1.2",
                 KeyManagerHelper.getKeyManagers(
-                        TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                        TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                        KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                        KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                         null),
                 null);
 
-        echoDtlsDatagramTestServerUsingDtlsv1point2 = newEchoDtlsDatagramTestServer(
+        echoDtlsDatagramServerUsingDtlsv1Point2 = newEchoDtlsDatagramServer(
                 new ServerDtlsDatagramSocketFactory(serverDtlsContextUsingDtlsv1point2));
-        echoDtlsDatagramTestServerUsingDtlsv1point2.start();
-        echoDtlsDatagramTestServerPortUsingDtlsv1point2 =
-                echoDtlsDatagramTestServerUsingDtlsv1point2.getPort();
+        echoDtlsDatagramServerUsingDtlsv1Point2.start();
+        echoDtlsDatagramServerPortUsingDtlsv1point2 =
+                echoDtlsDatagramServerUsingDtlsv1Point2.getPort();
 
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws IOException {
         // System.clearProperty("javax.net.debug");
-        if (echoDtlsDatagramTestServerUsingDtlsv1point2 != null
-                && !echoDtlsDatagramTestServerUsingDtlsv1point2.getState().equals(DatagramTestServer.State.STOPPED)) {
-            echoDtlsDatagramTestServerUsingDtlsv1point2.stop();
+        if (echoDtlsDatagramServerUsingDtlsv1Point2 != null
+                && !echoDtlsDatagramServerUsingDtlsv1Point2.getState().equals(DatagramServer.State.STOPPED)) {
+            echoDtlsDatagramServerUsingDtlsv1Point2.stop();
         }
     }
 
     @Test
     public void testEchoUsingDtlsv1point201() throws IOException {
-        String string = TestStringConstants.STRING_01;
+        String string = StringConstants.STRING_01;
         String returningString = echo(
                 new ClientDtlsDatagramSocketFactory(clientDtlsContextUsingDtlsv1point2),
                 string,
-                echoDtlsDatagramTestServerPortUsingDtlsv1point2);
+                echoDtlsDatagramServerPortUsingDtlsv1point2);
         Assert.assertEquals(string, returningString);
     }
 
     @Test
     public void testEchoUsingDtlsv1point202() throws IOException {
-        String string = TestStringConstants.STRING_02;
+        String string = StringConstants.STRING_02;
         String returningString = echo(
                 new ClientDtlsDatagramSocketFactory(clientDtlsContextUsingDtlsv1point2),
                 string,
-                echoDtlsDatagramTestServerPortUsingDtlsv1point2);
+                echoDtlsDatagramServerPortUsingDtlsv1point2);
         Assert.assertEquals(string, returningString);
     }
 
     @Test
     public void testEchoUsingDtlsv1point203() throws IOException {
-        String string = TestStringConstants.STRING_03;
+        String string = StringConstants.STRING_03;
         String returningString = echo(
                 new ClientDtlsDatagramSocketFactory(clientDtlsContextUsingDtlsv1point2),
                 string,
-                echoDtlsDatagramTestServerPortUsingDtlsv1point2);
+                echoDtlsDatagramServerPortUsingDtlsv1point2);
         Assert.assertEquals(string, returningString);
     }
 
     @Test
     public void testEchoUsingDtlsv1point204() throws IOException {
-        String string = TestStringConstants.STRING_04;
+        String string = StringConstants.STRING_04;
         String returningString = echo(
                 new ClientDtlsDatagramSocketFactory(clientDtlsContextUsingDtlsv1point2),
                 string,
-                echoDtlsDatagramTestServerPortUsingDtlsv1point2);
+                echoDtlsDatagramServerPortUsingDtlsv1point2);
         Assert.assertEquals(string, returningString);
     }
 
     @Test
     public void testEchoUsingDtlsv1point205() throws IOException {
-        String string = TestStringConstants.STRING_05;
+        String string = StringConstants.STRING_05;
         String returningString = echo(
                 new ClientDtlsDatagramSocketFactory(clientDtlsContextUsingDtlsv1point2),
                 string,
-                echoDtlsDatagramTestServerPortUsingDtlsv1point2);
+                echoDtlsDatagramServerPortUsingDtlsv1point2);
         Assert.assertEquals(string, returningString);
     }
 
@@ -174,7 +174,7 @@ public class DtlsDatagramSocketTest {
                 new DatagramSocket(0, InetAddress.getLoopbackAddress()),
                 clientDtlsContextUsingDtlsv1point2)) {
             dtlsDatagramSocket.connect(InetAddress.getLoopbackAddress(), 2323);
-            byte[] bytes = TestStringConstants.STRING_01.getBytes(
+            byte[] bytes = StringConstants.STRING_01.getBytes(
                     StandardCharsets.UTF_8);
             dtlsDatagramSocket.send(new DatagramPacket(
                     bytes,
@@ -212,9 +212,9 @@ public class DtlsDatagramSocketTest {
 
     }
 
-    private static final class EchoWorker extends DatagramTestServer.Worker {
+    private static final class EchoWorker extends DatagramServer.Worker {
 
-        public EchoWorker(final DatagramTestServer.ClientPackets clientPckts) {
+        public EchoWorker(final DatagramServer.ClientPackets clientPckts) {
             super(clientPckts);
         }
 
@@ -235,21 +235,21 @@ public class DtlsDatagramSocketTest {
     }
 
     private static final class EchoWorkerFactory
-            extends DatagramTestServer.WorkerFactory {
+            extends DatagramServer.WorkerFactory {
 
         public EchoWorkerFactory() {
         }
 
         @Override
-        public DatagramTestServer.Worker newWorker(
-                final DatagramTestServer.ClientPackets clientPckts) {
+        public DatagramServer.Worker newWorker(
+                final DatagramServer.ClientPackets clientPckts) {
             return new EchoWorker(clientPckts);
         }
 
     }
 
     private static final class ServerDtlsDatagramSocketFactory
-            extends DatagramTestServer.ServerDatagramSocketFactory {
+            extends DatagramServer.ServerDatagramSocketFactory {
 
         private final SSLContext serverDtlsContext;
 

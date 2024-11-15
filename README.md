@@ -2,8 +2,9 @@
 
 # Jargyle
 
-Jargyle is a Java SOCKS5 API and server that uses SSL/TLS, DTLS, and SOCKS5
-server chaining. It is inspired by [JSocks](https://jsocks.sourceforge.net/),
+Jargyle is a Java SOCKS5 API and server that can use SSL/TLS for TCP traffic, 
+can use DTLS for UDP traffic, and can perform SOCKS5 server chaining. It is 
+inspired by [JSocks](https://jsocks.sourceforge.net/),
 [SocksLib](https://github.com/fengyouchao/sockslib),
 [Esocks](https://github.com/fengyouchao/esocks) and
 [Dante](https://www.inet.no/dante/index.html).
@@ -38,39 +39,46 @@ The contributing guidelines can be found [here](CONTRIBUTING.md).
 
 The following is a simple overview of the directory.
 
-`.github`: Contains GitHub workflow files that perform tests and analysis
+`.github/`: Contains GitHub workflow files that perform tests and analysis
 when a push has been made to the GitHub repository
 
-`docs`: Contains the website/documentation
+`argmatey/`: Maven module for the extensible command line interface. It is 
+used for the Jargyle command line interface.
 
-`jargyle-cli`: Maven module for the Jargyle command line interface API
+`docs/`: Contains the website/documentation
 
-`jargyle-client`: Maven module for the SOCKS client API
+`jargyle-cli/`: Maven module for the Jargyle command line interface
 
-`jargyle-common`: Maven module for the public API used by all modules
+`jargyle-client/`: Maven module for the SOCKS client API
 
-`jargyle-distribution`: Maven module for creating the binary distribution
+`jargyle-common/`: Maven module for the public API used by all modules
 
-`jargyle-integration-test`: Maven module for integration testing between the
-SOCKS client API and the SOCKS server API.
+`jargyle-distribution/`: Maven module for creating the binary distribution
 
-`jargyle-internal`: Maven module for the internal API used by all modules
+`jargyle-internal/`: Maven module for the internal API used by all modules
 
-`jargyle-performance-test`: Maven module for performance testing of the SOCKS
-server API.
+`jargyle-protocolbase/`: Maven module for the foundational API for the SOCKS 
+client API and the SOCKS server API
 
-`jargyle-protocolbase`: Maven module for the foundational API for the
-SOCKS client API and the SOCKS server API
-
-`jargyle-report-aggregate`: Maven module for generating the aggregated
+`jargyle-report-aggregate/`: Maven module for generating the aggregated
 test coverage reports
 
-`jargyle-server`: Maven module for the SOCKS server API
+`jargyle-server/`: Maven module for the SOCKS server API
 
-`jargyle-test-help`: Maven module for the test help API. This module is used
-internally to help with testing.
+`src/site/`: Contains files used to generate `docs/`
 
-`src/site`: Contains files used to generate `docs/`
+`test-echo/`: Maven module for clients and servers that send/receive data and 
+receive/send back the same data. They are used for testing the SOCKS client 
+API and the SOCKS server API.
+
+`test-echo-server-performance/`: Maven module for performance testing of 
+servers that receive data and send back the same data. It includes performance 
+testing of the SOCKS server API.
+
+`test-help/`: Maven module for the API for help with testing
+
+`test-netty-example-socksproxy/`: Maven module for the modified version of the 
+Netty example SOCKS proxy. It is used for testing.
 
 `.gitignore`: List of directories and files for Git to ignore such as
 Eclipse and IntelliJ IDEA project directories and files
@@ -130,8 +138,15 @@ distribution skipping the execution of all tests.
 The built binary distribution can be found as a directory and in multiple 
 archive formats in `jargyle-distribution/target/`.
 
-`mvn clean test -Pcoverage`: Performs a clean build, executes all tests except 
-integration tests, and produces the aggregated test coverage reports. 
+`mvn clean test --projects=\!test-echo-server-performance -Pcoverage`: 
+Performs a clean build, executes all tests except the ones from the project 
+`test-echo-server-performance`, and produces the aggregated test coverage 
+reports.
+
+The option `--projects=\!test-echo-server-performance` can be removed if you 
+want the performance tests to be executed. If the performance tests are 
+executed, the results can be found in
+`test-echo-server-performance/target/performance-results/`.
 
 The aggregated test coverage reports can be found in 
 `jargyle-report-aggregate/target/`. 
@@ -143,34 +158,9 @@ When executing the tests, the tests use only the loopback address and the
 local port numbers assigned by the local system. However, the following 
 specified local port numbers need to be open:
 
--   `1080`: This default port number is used for a SOCKS server set up for 
-    testing.
--   `8000`: This port number is used for a Kerberos Key Distribution Center
-    (KDC) set up for testing.
-
-`mvn clean verify --projects=\!jargyle-performance-test,\!jargyle-distribution -Pcoverage`: 
-Performs a clean build, executes all tests including integration tests except 
-the ones from the project `jargyle-performance-test`, skips building the 
-binary distribution, and produces the aggregated test coverage reports. 
-
-The argument `\!jargyle-performance-test,` for the option `--projects` can be 
-removed if you want the performance tests to be executed. If the performance 
-tests are executed, the results can be found in
-`jargyle-performance-test/target/performance-results/`. 
-
-The aggregated test coverage reports can be found in
-`jargyle-report-aggregate/target/`. 
-
-The option `-Pcoverage` can be removed if you do not want the aggregated test 
-coverage reports produced.
-
-When executing the tests, the tests use only the loopback address and the
-local port numbers assigned by the local system. However, the following
-specified local port numbers need to be open:
-
--   `1080`: This default port number is used for a SOCKS server set up for
+-   `1080`: This default port number is used for SOCKS servers set up for 
     testing.
 -   `8000`: This port number is used for a Kerberos Key Distribution Center
     (KDC) set up for testing.
 -   `9000`: This port number is used for a Kerberos Key Distribution Center
-    (KDC) set up for integration testing.
+    (KDC) set up for testing. 

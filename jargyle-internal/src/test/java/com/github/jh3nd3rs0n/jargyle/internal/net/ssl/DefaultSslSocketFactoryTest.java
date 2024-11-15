@@ -1,9 +1,9 @@
 package com.github.jh3nd3rs0n.jargyle.internal.net.ssl;
 
 import com.github.jh3nd3rs0n.jargyle.internal.VirtualThreadPerTaskExecutorOrCachedThreadPoolFactory;
-import com.github.jh3nd3rs0n.jargyle.test.help.net.TestServer;
-import com.github.jh3nd3rs0n.jargyle.test.help.security.TestKeyStoreResourceConstants;
-import com.github.jh3nd3rs0n.jargyle.test.help.thread.ThreadHelper;
+import com.github.jh3nd3rs0n.test.help.net.Server;
+import com.github.jh3nd3rs0n.test.help.security.KeyStoreResourceConstants;
+import com.github.jh3nd3rs0n.test.help.thread.ThreadHelper;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -17,25 +17,25 @@ import java.security.NoSuchAlgorithmException;
 
 public class DefaultSslSocketFactoryTest {
 
-    private static TestServer testServer;
+    private static Server server;
     private static int testServerPort;
 
     @BeforeClass
     public static void setUpBeforeClass() throws IOException {
-        testServer = new TestServer(
-                new TestServer.DefaultServerSocketFactory(),
+        server = new Server(
+                new Server.DefaultServerSocketFactory(),
                 0,
                 new VirtualThreadPerTaskExecutorOrCachedThreadPoolFactory(),
-                new TestServer.DefaultWorkerFactory());
-        testServer.start();
-        testServerPort = testServer.getPort();
+                new Server.DefaultWorkerFactory());
+        server.start();
+        testServerPort = server.getPort();
     }
 
     @AfterClass
     public static void tearDownAfterClass() throws IOException {
-        if (testServer != null
-                && !testServer.getState().equals(TestServer.State.STOPPED)) {
-            testServer.stop();
+        if (server != null
+                && !server.getState().equals(Server.State.STOPPED)) {
+            server.stop();
         }
         ThreadHelper.interruptibleSleepForThreeSeconds();
     }
@@ -46,12 +46,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, null, false));
@@ -64,12 +64,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, new ByteArrayInputStream(new byte[] { }), false));
@@ -82,12 +82,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, new ByteArrayInputStream(new byte[] { }), true));
@@ -100,12 +100,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, null, true));
@@ -118,12 +118,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, "localhost", testServerPort, false));
@@ -136,12 +136,12 @@ public class DefaultSslSocketFactoryTest {
             DefaultSslSocketFactory defaultSslSocketFactory = new DefaultSslSocketFactory(SslContextHelper.getSslContext(
                     "TLSv1.2",
                     KeyManagerHelper.getKeyManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_1.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_1.getContentAsString().toCharArray(),
                             null),
                     TrustManagerHelper.getTrustManagers(
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
-                            TestKeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_FILE_2.getInputStream(),
+                            KeyStoreResourceConstants.JARGYLE_TEST_HELP_SECURITY_KEY_STORE_PASSWORD_FILE_2.getContentAsString().toCharArray(),
                             null)));
             Assert.assertNotNull(defaultSslSocketFactory.newSocket(
                     socket, "localhost", testServerPort, true));
