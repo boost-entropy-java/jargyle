@@ -1,5 +1,6 @@
 package com.github.jh3nd3rs0n.jargyle.cli;
 
+import com.github.jh3nd3rs0n.argmatey.ArgMatey;
 import com.github.jh3nd3rs0n.jargyle.client.Property;
 import com.github.jh3nd3rs0n.jargyle.client.Scheme;
 import com.github.jh3nd3rs0n.jargyle.client.UserInfo;
@@ -245,39 +246,79 @@ final class ReferenceDocsGenerator {
         pw.println(UNORDERED_LIST_END_TAG);
         pw.println(this.getHeader2("Help Information"));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        new JargyleCLI(
-                "jargyle",
-                "jargyle",
-                new String[]{"--help"},
-                false).printProgramHelp(pw);
+        try (StringWriter stringWriter = new StringWriter();
+             PrintWriter printWriter = new PrintWriter(stringWriter)) {
+            new JargyleCLI(
+                    "jargyle",
+                    "jargyle",
+                    new String[]{"--help"},
+                    false).printProgramHelp(printWriter);
+            printWriter.flush();
+            pw.print(this.replaceReservedHtmlCharacters(
+                    stringWriter.toString()));
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         pw.println(this.getHeader3("Help Information for manage-socks5-users"));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        new Socks5UserManagerCLI(
-                "manage-socks5-users",
-                "jargyle manage-socks5-users",
-                new String[]{"--help"},
-                false).printProgramHelp(pw);
+        try (StringWriter stringWriter = new StringWriter();
+             PrintWriter printWriter = new PrintWriter(stringWriter)) {
+            new Socks5UserManagerCLI(
+                    "manage-socks5-users",
+                    "jargyle manage-socks5-users",
+                    new String[]{"--help"},
+                    false).printProgramHelp(printWriter);
+            printWriter.flush();
+            pw.print(this.replaceReservedHtmlCharacters(
+                    stringWriter.toString()));
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         pw.println(this.getHeader3("Help Information for new-server-config-file"));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        new ServerConfigurationFileCreatorCLI(
-                "new-server-config-file",
-                "jargyle new-server-config-file",
-                new String[]{"--help"},
-                false).printProgramHelp(pw);
+        try (StringWriter stringWriter = new StringWriter();
+             PrintWriter printWriter = new PrintWriter(stringWriter)) {
+            new ServerConfigurationFileCreatorCLI(
+                    "new-server-config-file",
+                    "jargyle new-server-config-file",
+                    new String[]{"--help"},
+                    false).printProgramHelp(printWriter);
+            printWriter.flush();
+            pw.print(this.replaceReservedHtmlCharacters(
+                    stringWriter.toString()));
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         pw.println(this.getHeader3("Help Information for start-server"));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        new ServerStarterCLI(
-                "start-server",
-                "jargyle start-server",
-                new String[]{"--help"},
-                false).printProgramHelp(pw);
+        try (StringWriter stringWriter = new StringWriter();
+             PrintWriter printWriter = new PrintWriter(stringWriter)) {
+            new ServerStarterCLI(
+                    "start-server",
+                    "jargyle start-server",
+                    new String[]{"--help"},
+                    false).printProgramHelp(printWriter);
+            printWriter.flush();
+            pw.print(this.replaceReservedHtmlCharacters(
+                    stringWriter.toString()));
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         pw.println(this.getHeader3("Settings Help Information"));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        new SettingsHelpPrinter().printSettingsHelp(pw);
+        try (StringWriter stringWriter = new StringWriter();
+             PrintWriter printWriter = new PrintWriter(stringWriter)) {
+            new SettingsHelpPrinter().printSettingsHelp(printWriter);
+            printWriter.flush();
+            pw.print(this.replaceReservedHtmlCharacters(
+                    stringWriter.toString()));
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         pw.println(DOCUMENT_END_TAGS);
     }
@@ -290,13 +331,15 @@ final class ReferenceDocsGenerator {
         pw.println(this.getTextAsParagraph(this.getBoldText(
                 "Syntax:")));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        pw.println(enumValueTypeDoc.syntax());
+        pw.println(this.replaceReservedHtmlCharacters(
+                enumValueTypeDoc.syntax()));
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         String description = enumValueTypeDoc.description();
         if (!description.isEmpty()) {
             pw.println(this.getTextAsParagraph(this.getBoldText(
                     "Description:")));
-            pw.println(this.getTextAsParagraph(description));
+            pw.println(this.getTextAsParagraph(
+                    this.replaceReservedHtmlCharacters(description)));
         }
         List<EnumValueDoc> enumValueDocList = Arrays.stream(cls.getDeclaredFields())
                 .map((field) -> field.getAnnotation(EnumValueDoc.class))
@@ -311,7 +354,9 @@ final class ReferenceDocsGenerator {
                 pw.print(this.getCodeText(enumValueDoc.value()));
                 String desc = enumValueDoc.description();
                 if (!desc.isEmpty()) {
-                    pw.printf(": %s", desc);
+                    pw.printf(
+                            ": %s",
+                            this.replaceReservedHtmlCharacters(desc));
                 }
                 pw.println(LIST_ITEM_END_TAG);
             }
@@ -326,13 +371,15 @@ final class ReferenceDocsGenerator {
         pw.println(this.getTextAsParagraph(this.getBoldText(
                 "Syntax:")));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        pw.println(nameValuePairValueTypeDoc.syntax());
+        pw.println(this.replaceReservedHtmlCharacters(
+                nameValuePairValueTypeDoc.syntax()));
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         String description = nameValuePairValueTypeDoc.description();
         if (!description.isEmpty()) {
             pw.println(this.getTextAsParagraph(this.getBoldText(
                     "Description:")));
-            pw.println(this.getTextAsParagraph(description));
+            pw.println(this.getTextAsParagraph(
+                    this.replaceReservedHtmlCharacters(description)));
         }
         for (Class<?> c : nameValuePairValueTypeDoc.nameValuePairValueSpecs()) {
             NameValuePairValueSpecsDoc nameValuePairValueSpecsDoc =
@@ -344,7 +391,8 @@ final class ReferenceDocsGenerator {
                 if (!desc.isEmpty()) {
                     pw.println(this.getTextAsParagraph(this.getBoldText(
                             "Description:")));
-                    pw.println(this.getTextAsParagraph(desc));
+                    pw.println(this.getTextAsParagraph(
+                            this.replaceReservedHtmlCharacters(desc)));
                 }
                 for (Field field : c.getDeclaredFields()) {
                     NameValuePairValueSpecDoc nameValuePairValueSpecDoc =
@@ -354,13 +402,15 @@ final class ReferenceDocsGenerator {
                         pw.println(this.getTextAsParagraph(this.getBoldText(
                                 "Syntax:")));
                         pw.print(PREFORMATTED_TEXT_START_TAGS);
-                        pw.println(nameValuePairValueSpecDoc.syntax());
+                        pw.println(this.replaceReservedHtmlCharacters(
+                                nameValuePairValueSpecDoc.syntax()));
                         pw.println(PREFORMATTED_TEXT_END_TAGS);
                         String d = nameValuePairValueSpecDoc.description();
                         if (!d.isEmpty()) {
                             pw.println(this.getTextAsParagraph(this.getBoldText(
                                     "Description:")));
-                            pw.println(this.getTextAsParagraph(d));
+                            pw.println(this.getTextAsParagraph(
+                                    this.replaceReservedHtmlCharacters(d)));
                         }
                         pw.println(this.getTextAsParagraph(String.format(
                                 "%s %s",
@@ -381,13 +431,15 @@ final class ReferenceDocsGenerator {
         pw.println(this.getTextAsParagraph(this.getBoldText(
                 "Syntax:")));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        pw.println(singleValueTypeDoc.syntax());
+        pw.println(this.replaceReservedHtmlCharacters(
+                singleValueTypeDoc.syntax()));
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         String description = singleValueTypeDoc.description();
         if (!description.isEmpty()) {
             pw.println(this.getTextAsParagraph(this.getBoldText(
                     "Description:")));
-            pw.println(this.getTextAsParagraph(description));
+            pw.println(this.getTextAsParagraph(
+                    this.replaceReservedHtmlCharacters(description)));
         }
         for (Class<?> c : singleValueTypeDoc.singleValueSpecs()) {
             SingleValueSpecsDoc singleValueSpecsDoc = c.getAnnotation(
@@ -398,7 +450,8 @@ final class ReferenceDocsGenerator {
                 if (!desc.isEmpty()) {
                     pw.println(this.getTextAsParagraph(this.getBoldText(
                             "Description:")));
-                    pw.println(this.getTextAsParagraph(desc));
+                    pw.println(this.getTextAsParagraph(this.getTextAsParagraph(
+                            desc)));
                 }
                 for (Field field : c.getDeclaredFields()) {
                     SingleValueSpecDoc singleValueSpecDoc =
@@ -408,13 +461,15 @@ final class ReferenceDocsGenerator {
                         pw.println(this.getTextAsParagraph(this.getBoldText(
                                 "Syntax:")));
                         pw.print(PREFORMATTED_TEXT_START_TAGS);
-                        pw.println(singleValueSpecDoc.syntax());
+                        pw.println(this.replaceReservedHtmlCharacters(
+                                singleValueSpecDoc.syntax()));
                         pw.println(PREFORMATTED_TEXT_END_TAGS);
                         String d = singleValueSpecDoc.description();
                         if (!d.isEmpty()) {
                             pw.println(this.getTextAsParagraph(this.getBoldText(
                                     "Description:")));
-                            pw.println(this.getTextAsParagraph(d));
+                            pw.println(this.getTextAsParagraph(
+                                    this.replaceReservedHtmlCharacters(d)));
                         }
                     }
                 }
@@ -429,13 +484,15 @@ final class ReferenceDocsGenerator {
         pw.println(this.getTextAsParagraph(this.getBoldText(
                 "Syntax:")));
         pw.print(PREFORMATTED_TEXT_START_TAGS);
-        pw.println(valuesValueTypeDoc.syntax());
+        pw.println(this.replaceReservedHtmlCharacters(
+                valuesValueTypeDoc.syntax()));
         pw.println(PREFORMATTED_TEXT_END_TAGS);
         String description = valuesValueTypeDoc.description();
         if (!description.isEmpty()) {
             pw.println(this.getTextAsParagraph(this.getBoldText(
                     "Description:")));
-            pw.println(this.getTextAsParagraph(description));
+            pw.println(this.getTextAsParagraph(
+                    this.replaceReservedHtmlCharacters(description)));
         }
         pw.println(this.getTextAsParagraph(String.format(
                 "%s %s",
@@ -494,20 +551,7 @@ final class ReferenceDocsGenerator {
                 out.toByteArray()));
         int ch;
         while ((ch = reader.read()) != -1) {
-            char c = (char) ch;
-            if (c == '<') {
-                ps.print("&lt;");
-                continue;
-            }
-            if (c == '>') {
-                ps.print("&gt;");
-                continue;
-            }
-            if (c == '"') {
-                ps.print("&quot;");
-                continue;
-            }
-            ps.print(c);
+            ps.print(this.replaceReservedHtmlCharacter((char) ch));
         }
         ps.println("</code></pre>");
         ps.println(DOCUMENT_END_TAGS);
@@ -644,7 +688,8 @@ final class ReferenceDocsGenerator {
                                     this.getLinkToValueInfo(
                                             nameValuePairValueSpecDoc.valueType()
                                     ),
-                                    nameValuePairValueSpecDoc.description());
+                                    this.replaceReservedHtmlCharacters(
+                                            nameValuePairValueSpecDoc.description()));
                         }
                     }
                 }
@@ -736,6 +781,30 @@ final class ReferenceDocsGenerator {
             this.putFromValueType(
                     valueTypeMap, valuesValueTypeDoc.elementValueType());
         }
+    }
+
+    private String replaceReservedHtmlCharacter(final char c) {
+        if (c == '<') {
+            return "&lt;";
+        }
+        if (c == '>') {
+            return "&gt;";
+        }
+        if (c == '&') {
+            return "&amp;";
+        }
+        if (c == '"') {
+            return "&quot;";
+        }
+        return Character.toString(c);
+    }
+
+    private String replaceReservedHtmlCharacters(final String s) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            stringBuilder.append(replaceReservedHtmlCharacter(c));
+        }
+        return stringBuilder.toString();
     }
 
 }
