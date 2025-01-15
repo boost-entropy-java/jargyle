@@ -402,27 +402,21 @@ Kerberos Key Distribution Center (KDC) for authentication.
     kdc_realm = JARGYLE.NET
     default_realm = JARGYLE.NET
     udp_preference_limit = 4096
-    kdc_tcp_port = 4444
-    kdc_udp_port = 4444
+    kdc_tcp_port = 12345
+    kdc_udp_port = 12345
 
 [realms]
     JARGYLE.NET = {
-        kdc = jargyle.net:4444
+        kdc = jargyle.net:12345
     }
 ```
 
-In `krb5.conf`, a KDC is defined as running at the address `jargyle.net` on 
-port `4444` with its realm as `JARGYLE.NET`. (In a production environment, 
-the address `jargyle.net` should be replaced by the actual address or name of 
-the machine of where the KDC resides. Also, in a production environment, the 
-realm `JARGYLE.NET` should be replaced by an actual realm provided by a 
-Kerberos administrator.)
+In `krb5.conf`, a KDC is defined as running at `jargyle.net` on port `12345` 
+with its realm as `JARGYLE.NET`.
 
 The property `socksClient.socks5.gssapimethod.serviceName` with the value 
 `rcmd/jargyle.net` is the GSS-API service name (or the Kerberos service 
-principal) for the SOCKS server residing at the address `jargyle.net`. (In 
-a production environment, the address `jargyle.net` should be replaced by the 
-name of the machine of where the SOCKS server resides.)
+principal) for the SOCKS server residing at `jargyle.net`.
 
 ## Resolving Host Names From the SOCKS5 Server
 
@@ -521,13 +515,13 @@ import java.net.Socket;
 public class ClientApp {
     public static void main(String[] args) throws IOException {
         SocksClient socksClient1 = Scheme.SOCKS5
-            .newSocksServerUri("betabeta.net", 3456)
+            .newSocksServerUri("alpha-alpha.net", 11111)
             .newSocksClient(Properties.of());
         SocksClient socksClient2 = Scheme.SOCKS5
-            .newSocksServerUri("alphaalpha.net", 2345)
+            .newSocksServerUri("beta-alpha.net", 22221)
             .newSocksClient(Properties.of(), socksClient1);
         SocksClient socksClient3 = Scheme.SOCKS5
-            .newSocksServerUri("jargyle.net", 1234)
+            .newSocksServerUri("gamma-alpha.net", 33331)
             .newSocksClient(Properties.of(), socksClient2);
         NetObjectFactory netObjectFactory = 
             socksClient3.newSocksNetObjectFactory();
@@ -539,5 +533,4 @@ public class ClientApp {
 The known limitations of routing traffic through a specified chain of SOCKS 
 servers include the following:
 
--   Only TCP traffic can be routed through the chain. The client will attempt to 
-route any UDP traffic through the last SOCKS server of the chain.
+-   Only TCP traffic can be routed through the chain.

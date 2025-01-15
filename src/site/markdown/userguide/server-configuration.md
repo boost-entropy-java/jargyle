@@ -659,18 +659,16 @@ mechanism.
 ```text
 com.sun.security.jgss.accept {
   com.sun.security.auth.module.Krb5LoginModule required
-  principal="rcmd/127.0.0.1"
+  principal="rcmd/jargyle.net"
   useKeyTab=true
   keyTab="rcmd.keytab"
   storeKey=true;
 };
 ```
 
-In `login.conf`, `rcmd/127.0.0.1` is a service principal that is created by 
+In `login.conf`, `rcmd/jargyle.net` is a service principal that is created by 
 a Kerberos administrator specifically for a SOCKS5 server with the service name 
-`rcmd` residing at the address `127.0.0.1`. (In a production environment, the 
-address `127.0.0.1` should be replaced by the name of the machine of where the 
-SOCKS5 server resides.) 
+`rcmd` residing at `jargyle.net`.
 
 Also in `login.conf`, `rcmd.keytab` is a keytab file also created by a 
 Kerberos administrator that contains the aforementioned service principal and 
@@ -684,24 +682,20 @@ Kerberos Key Distribution Center (KDC) for authentication.
 
 ```text
 [libdefaults]
-    kdc_realm = EXAMPLE.COM
-    default_realm = EXAMPLE.COM
+    kdc_realm = JARGYLE.NET
+    default_realm = JARGYLE.NET
     udp_preference_limit = 4096
     kdc_tcp_port = 12345
     kdc_udp_port = 12345
 
 [realms]
-    EXAMPLE.COM = {
-        kdc = 127.0.0.1:12345
+    JARGYLE.NET = {
+        kdc = jargyle.net:12345
     }
 ```
 
-In `krb5.conf`, a KDC is defined as running at the address `127.0.0.1` on 
-port `12345` with its realm as `EXAMPLE.COM`. (In a production environment, 
-the address `127.0.0.1` should be replaced by the actual address or name of 
-the machine of where the KDC resides. Also, in a production environment, the 
-realm `EXAMPLE.COM` should be replaced by an actual realm provided by a 
-Kerberos administrator.)  
+In `krb5.conf`, a KDC is defined as running at `jargyle.net` on port `12345` 
+with its realm as `JARGYLE.NET`.  
 
 ## Chaining to Another SOCKS Server
 
@@ -727,7 +721,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456")
+                "socks5://alpha-alpha.net:11111")
         ))).start();
     }
 }
@@ -736,7 +730,7 @@ public class ServerApp {
 Command line example:
 
 ```bash
-jargyle start-server --setting=chaining.socksServerUri=socks5://127.0.0.1:23456
+jargyle start-server --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111
 ```
 
 Server configuration file example:
@@ -747,7 +741,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
     </settings>
 </configuration>
@@ -755,10 +749,10 @@ Server configuration file example:
 
 Please note that the scheme in the URI specifies the SOCKS protocol to be used 
 to access the other SOCKS server (`socks5`), the address or name of the
-machine of where the other SOCKS server resides (`127.0.0.1`), and the port 
-number of the other SOCKS server (`23456`). In the aforementioned examples, the 
-SOCKS protocol version 5 is used. At this time, the only supported scheme for 
-the URI format is `socks5`
+machine of where the other SOCKS server resides (`alpha-alpha.net`), and the 
+port number of the other SOCKS server (`11111`). In the aforementioned 
+examples, the SOCKS protocol version 5 is used. At this time, the only 
+supported scheme for the URI format is `socks5`
 
 <a id="enabling-ssltls-for-tcp-traffic-between-the-server-and-the-other-socks-server"></a>
 ### Enabling SSL/TLS for TCP Traffic Between the Server and the Other SOCKS Server
@@ -795,7 +789,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.ssl.enabled", "true"),
             Setting.newInstanceWithParsedValue(
@@ -811,7 +805,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.ssl.enabled=true \
     --setting=chaining.ssl.trustStoreFile=server.jks \
     --setting=chaining.ssl.trustStorePassword=password
@@ -825,7 +819,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.ssl.enabled</name>
@@ -853,7 +847,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.ssl.enabled=true \
     --setting=chaining.ssl.trustStoreFile=server.jks \
     --enter-chaining-ssl-trust-store-pass
@@ -883,7 +877,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.ssl.enabled", "true"),
             Setting.newInstanceWithParsedValue(
@@ -903,7 +897,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.ssl.enabled=true \
     --setting=chaining.ssl.keyStoreFile=client.jks \
     --setting=chaining.ssl.keyStorePassword=drowssap \
@@ -919,7 +913,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.ssl.enabled</name>
@@ -956,7 +950,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.ssl.enabled=true \
     --setting=chaining.ssl.keyStoreFile=client.jks \
     --enter-chaining-ssl-key-store-pass \
@@ -999,7 +993,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.dtls.enabled", "true"),
             Setting.newInstanceWithParsedValue(
@@ -1015,7 +1009,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.dtls.enabled=true \
     --setting=chaining.dtls.trustStoreFile=server.jks \
     --setting=chaining.dtls.trustStorePassword=password
@@ -1029,7 +1023,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.dtls.enabled</name>
@@ -1057,7 +1051,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.dtls.enabled=true \
     --setting=chaining.dtls.trustStoreFile=server.jks \
     --enter-chaining-dtls-trust-store-pass
@@ -1093,7 +1087,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods",
                 "NO_AUTHENTICATION_REQUIRED,GSSAPI")
@@ -1106,7 +1100,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=NO_AUTHENTICATION_REQUIRED,GSSAPI
 ```
 
@@ -1123,7 +1117,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1167,7 +1161,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods",
                 "NO_AUTHENTICATION_REQUIRED,GSSAPI,USERNAME_PASSWORD")
@@ -1180,7 +1174,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=NO_AUTHENTICATION_REQUIRED,GSSAPI,USERNAME_PASSWORD
 ```
 
@@ -1192,7 +1186,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1233,7 +1227,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods", "USERNAME_PASSWORD"),
             Setting.newInstanceWithParsedValue(
@@ -1251,7 +1245,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=USERNAME_PASSWORD \
     --setting=chaining.socks5.userpassmethod.username=Aladdin \
     --setting=chaining.socks5.userpassmethod.password=opensesame
@@ -1265,7 +1259,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1295,7 +1289,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=USERNAME_PASSWORD \
     --setting=chaining.socks5.userpassmethod.username=Aladdin \
     --enter-chaining-socks5-userpassmethod-pass
@@ -1339,7 +1333,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://Jasmine:mission%3Aimpossible@127.0.0.1:23456")
+                "socks5://Jasmine:mission%3Aimpossible@alpha-alpha.net:11111")
         ))).start();
     }
 }
@@ -1349,7 +1343,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://Jasmine:mission%3Aimpossible@127.0.0.1:23456
+    --setting=chaining.socksServerUri=socks5://Jasmine:mission%3Aimpossible@alpha-alpha.net:11111
 ```
 
 Server configuration file example:
@@ -1360,7 +1354,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://Jasmine:mission%3Aimpossible@127.0.0.1:23456</value>
+            <value>socks5://Jasmine:mission%3Aimpossible@alpha-alpha.net:11111</value>
         </setting>
     </settings>
 </configuration>
@@ -1410,12 +1404,12 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods", "GSSAPI"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.gssapimethod.serviceName",
-                "rcmd/127.0.0.1")
+                "rcmd/alpha-alpha.net")
         ))).start();
     }
 }
@@ -1426,9 +1420,9 @@ Command line example:
 ```bash
 export JARGYLE_OPTS="-Djavax.security.auth.useSubjectCredsOnly=false -Djava.security.auth.login.config=login.conf -Djava.security.krb5.conf=krb5.conf"
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=GSSAPI \
-    --setting=chaining.socks5.gssapimethod.serviceName=rcmd/127.0.0.1 
+    --setting=chaining.socks5.gssapimethod.serviceName=rcmd/alpha-alpha.net 
 ```
 
 Server configuration file example:
@@ -1443,7 +1437,7 @@ export JARGYLE_OPTS="-Djavax.security.auth.useSubjectCredsOnly=false -Djava.secu
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1453,7 +1447,7 @@ export JARGYLE_OPTS="-Djavax.security.auth.useSubjectCredsOnly=false -Djava.secu
         </setting>
         <setting>
             <name>chaining.socks5.gssapimethod.serviceName</name>
-            <value>rcmd/127.0.0.1</value>
+            <value>rcmd/alpha-alpha.net</value>
         </setting>
     </settings>
 </configuration>
@@ -1494,30 +1488,24 @@ Kerberos Key Distribution Center (KDC) for authentication.
 
 ```text
 [libdefaults]
-    kdc_realm = EXAMPLE.COM
-    default_realm = EXAMPLE.COM
+    kdc_realm = ALPHA-ALPHA.NET
+    default_realm = ALPHA-ALPHA.NET
     udp_preference_limit = 4096
     kdc_tcp_port = 12345
     kdc_udp_port = 12345
 
 [realms]
-    EXAMPLE.COM = {
-        kdc = 127.0.0.1:12345
+    ALPHA-ALPHA.NET = {
+        kdc = alpha-alpha.net:12345
     }
 ```
 
-In `krb5.conf`, a KDC is defined as running at the address `127.0.0.1` on 
-port `12345` with its realm as `EXAMPLE.COM`. (In a production environment, 
-the address `127.0.0.1` should be replaced by the actual address or name of 
-the machine of where the KDC resides. Also, in a production environment, the 
-realm `EXAMPLE.COM` should be replaced by an actual realm provided by a 
-Kerberos administrator.)
+In `krb5.conf`, a KDC is defined as running at `alpha-alpha.net` on port 
+`12345` with its realm as `ALPHA-ALPHA.NET`.
 
 The setting `chaining.socks5.gssapimethod.serviceName` with the value 
-`rcmd/127.0.0.1` is the GSS-API service name (or the Kerberos service 
-principal) for the other SOCKS server residing at the address `127.0.0.1`. (In 
-a production environment, the address `127.0.0.1` should be replaced by the 
-name of the machine of where the other SOCKS server resides.)
+`rcmd/alpha-alpha.net` is the GSS-API service name (or the Kerberos service 
+principal) for the other SOCKS server residing at `alpha-alpha.net`.
 
 ### Resolving Host Names From the Other SOCKS5 Server
 
@@ -1609,7 +1597,7 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.socks5HostResolver.resolveFromSocks5Server", 
                 "true")
@@ -1622,7 +1610,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.socks5HostResolver.resolveFromSocks5Server=true
 ```
 
@@ -1634,7 +1622,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.socks5HostResolver.resolveFromSocks5Server</name>
@@ -1669,13 +1657,13 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:65432"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:34567")
+                "socks5://gamma-alpha.net:33331")
         ))).start();
     }
 }
@@ -1685,9 +1673,9 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:65432 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:34567
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331
 ```
 
 Server configuration file example:
@@ -1698,15 +1686,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:65432</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:34567</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
     </settings>
 </configuration>
@@ -1733,15 +1721,15 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:23456"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods", "GSSAPI"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.gssapimethod.serviceName",
-                "rcmd/127.0.0.1"),
+                "rcmd/alpha-alpha.net"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:65432"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.methods", "USERNAME_PASSWORD"),
             Setting.newInstanceWithParsedValue(
@@ -1752,7 +1740,7 @@ public class ServerApp {
                 "opensesame"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:34567"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socks5.socks5HostResolver.resolveFromSocks5Server", 
                 "true")
@@ -1765,14 +1753,14 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:23456 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
     --setting=chaining.socks5.methods=GSSAPI \
-    --setting=chaining.socks5.gssapimethod.serviceName=rcmd/127.0.0.1 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:65432 \
+    --setting=chaining.socks5.gssapimethod.serviceName=rcmd/alpha-alpha.net \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
     --setting=chaining.socks5.methods=USERNAME_PASSWORD \
     --setting=chaining.socks5.userpassmethod.username=Aladdin \
     --setting=chaining.socks5.userpassmethod.password=opensesame \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:34567 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
     --setting=chaining.socks5.socks5HostResolver.resolveFromSocks5Server=true
 ```
 
@@ -1784,7 +1772,7 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:23456</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1794,11 +1782,11 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socks5.gssapimethod.serviceName</name>
-            <value>rcmd/127.0.0.1</value>
+            <value>rcmd/alpha-alpha.net</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:65432</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socks5.methods</name>
@@ -1817,7 +1805,7 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:34567</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>        
         <setting>
             <name>chaining.socks5.socks5HostResolver.resolveFromSocks5Server</name>
@@ -1830,8 +1818,7 @@ Server configuration file example:
 The known limitations of chaining to a specified chain of other SOCKS servers 
 include the following:
 
--   Only TCP traffic can be routed through the chain. The server will attempt to 
-route any UDP traffic through the last SOCKS server of the chain.
+-   Only TCP traffic can be routed through the chain.
 
 ## Chaining to Specified Chains of Other SOCKS Servers
 
@@ -1860,37 +1847,37 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333"),
+                "socks5://gamma-gamma.net:33333"),
             Setting.newInstanceWithParsedValue(
-                "chaining.routeId", "delta")
+                "chaining.routeId", "gamma")
         ))).start();
     }
 }
@@ -1900,18 +1887,18 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333 \
-    --setting=chaining.routeId=delta
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333 \
+    --setting=chaining.routeId=gamma
 ```
 
 Server configuration file example:
@@ -1922,15 +1909,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -1938,15 +1925,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -1954,19 +1941,19 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
-            <value>delta</value>
+            <value>gamma</value>
         </setting>
     </settings>
 </configuration>
@@ -1974,15 +1961,15 @@ Server configuration file example:
 
 From the aforementioned examples: 
 
--   The chain consisting of `socks5://127.0.0.1:11111`, 
-`socks5://127.0.0.1:11112`, and `socks5://127.0.0.1:11113` is assigned 
+-   The chain consisting of `socks5://alpha-alpha.net:11111`, 
+`socks5://alpha-beta.net:11112`, and `socks5://alpha-gamma.net:11113` is assigned 
 the route ID of `alpha`
--   The chain consisting of `socks5://127.0.0.1:22221`, 
-`socks5://127.0.0.1:22222`, and `socks5://127.0.0.1:22223` is assigned 
+-   The chain consisting of `socks5://beta-alpha.net:22221`, 
+`socks5://beta-beta.net:22222`, and `socks5://beta-gamma.net:22223` is assigned 
 the route ID of `beta`
--   The chain consisting of `socks5://127.0.0.1:33331`, 
-`socks5://127.0.0.1:33332`, and `socks5://127.0.0.1:33333` is assigned 
-the route ID of `delta`
+-   The chain consisting of `socks5://gamma-alpha.net:33331`, 
+`socks5://gamma-beta.net:33332`, and `socks5://gamma-gamma.net:33333` is assigned 
+the route ID of `gamma`
 
 There is another route that is assigned a route ID. That route is the direct 
 route. The direct route uses no chain to route the traffic through. It is 
@@ -2008,35 +1995,35 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333")
+                "socks5://gamma-gamma.net:33333")
         ))).start();
     }
 }
@@ -2046,17 +2033,17 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333
 ```
 
 Server configuration file example:
@@ -2067,15 +2054,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2083,15 +2070,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2099,15 +2086,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
     </settings>
 </configuration>
@@ -2115,14 +2102,14 @@ Server configuration file example:
 
 From the aforementioned examples: 
 
--   The chain consisting of `socks5://127.0.0.1:11111`, 
-`socks5://127.0.0.1:11112`, and `socks5://127.0.0.1:11113` is assigned 
+-   The chain consisting of `socks5://alpha-alpha.net:11111`, 
+`socks5://alpha-beta.net:11112`, and `socks5://alpha-gamma.net:11113` is assigned 
 the route ID of `alpha`
--   The chain consisting of `socks5://127.0.0.1:22221`, 
-`socks5://127.0.0.1:22222`, and `socks5://127.0.0.1:22223` is assigned 
+-   The chain consisting of `socks5://beta-alpha.net:22221`, 
+`socks5://beta-beta.net:22222`, and `socks5://beta-gamma.net:22223` is assigned 
 the route ID of `beta`
--   The chain consisting of `socks5://127.0.0.1:33331`, 
-`socks5://127.0.0.1:33332`, and `socks5://127.0.0.1:33333` is assigned 
+-   The chain consisting of `socks5://gamma-alpha.net:33331`, 
+`socks5://gamma-beta.net:33332`, and `socks5://gamma-gamma.net:33333` is assigned 
 by default the route ID of `lastRoute`
 
 To change the route ID assigned to the last route, you can set the setting 
@@ -2145,35 +2132,35 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333"),
+                "socks5://gamma-gamma.net:33333"),
             Setting.newInstanceWithParsedValue(
                 "lastRouteId", "omega")
         ))).start();
@@ -2185,17 +2172,17 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333 \
     --setting=lastRouteId=omega
 ```
 
@@ -2207,15 +2194,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2223,15 +2210,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2239,15 +2226,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
         <setting>
             <name>lastRouteId</name>
@@ -2277,35 +2264,35 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333"),
+                "socks5://gamma-gamma.net:33333"),
             Setting.newInstanceWithParsedValue(
                 "lastRouteId", "omega"),
             Setting.newInstanceWithParsedValue(
@@ -2319,17 +2306,17 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333 \
     --setting=lastRouteId=omega \
     --setting=routeSelectionStrategy=RANDOM
 ```
@@ -2342,15 +2329,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2358,15 +2345,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2374,15 +2361,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
         <setting>
             <name>lastRouteId</name>
@@ -2416,35 +2403,35 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333"),
+                "socks5://gamma-gamma.net:33333"),
             Setting.newInstanceWithParsedValue(
                 "lastRouteId", "omega"),
             Setting.newInstanceWithParsedValue(
@@ -2460,17 +2447,17 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333 \
     --setting=lastRouteId=omega \
     --setting=routeSelectionStrategy=RANDOM \
     --setting=routeSelectionLogAction=LOG_AS_INFO
@@ -2484,15 +2471,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2500,15 +2487,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -2516,15 +2503,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
         <setting>
             <name>lastRouteId</name>
@@ -3162,35 +3149,35 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11111"),
+                "socks5://alpha-alpha.net:11111"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11112"),
+                "socks5://alpha-beta.net:11112"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:11113"),
+                "socks5://alpha-gamma.net:11113"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "alpha"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22221"),
+                "socks5://beta-alpha.net:22221"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22222"),
+                "socks5://beta-beta.net:22222"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:22223"),
+                "socks5://beta-gamma.net:22223"),
             Setting.newInstanceWithParsedValue(
                 "chaining.routeId", "beta"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33331"),
+                "socks5://gamma-alpha.net:33331"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33332"),
+                "socks5://gamma-beta.net:33332"),
             Setting.newInstanceWithParsedValue(
                 "chaining.socksServerUri", 
-                "socks5://127.0.0.1:33333"),
+                "socks5://gamma-gamma.net:33333"),
             Setting.newInstanceWithParsedValue(
                 "lastRouteId", "omega"),
             /*
@@ -3224,17 +3211,17 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11111 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11112 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:11113 \
+    --setting=chaining.socksServerUri=socks5://alpha-alpha.net:11111 \
+    --setting=chaining.socksServerUri=socks5://alpha-beta.net:11112 \
+    --setting=chaining.socksServerUri=socks5://alpha-gamma.net:11113 \
     --setting=chaining.routeId=alpha \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22221 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22222 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:22223 \
+    --setting=chaining.socksServerUri=socks5://beta-alpha.net:22221 \
+    --setting=chaining.socksServerUri=socks5://beta-beta.net:22222 \
+    --setting=chaining.socksServerUri=socks5://beta-gamma.net:22223 \
     --setting=chaining.routeId=beta \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33331 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33332 \
-    --setting=chaining.socksServerUri=socks5://127.0.0.1:33333 \
+    --setting=chaining.socksServerUri=socks5://gamma-alpha.net:33331 \
+    --setting=chaining.socksServerUri=socks5://gamma-beta.net:33332 \
+    --setting=chaining.socksServerUri=socks5://gamma-gamma.net:33333 \
     --setting=lastRouteId=omega \
     --setting=rule=socks5.request.command=CONNECT,firewallAction=ALLOW,routeSelectionStrategy=RANDOM,selectableRouteId=alpha,selectableRouteId=beta,routeSelectionLogAction=LOG_AS_INFO \
     --setting=rule=firewallAction=ALLOW,routeSelectionStrategy=CYCLICAL,selectableRouteId=omega
@@ -3248,15 +3235,15 @@ Server configuration file example:
     <settings>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11111</value>
+            <value>socks5://alpha-alpha.net:11111</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11112</value>
+            <value>socks5://alpha-beta.net:11112</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:11113</value>
+            <value>socks5://alpha-gamma.net:11113</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -3264,15 +3251,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22221</value>
+            <value>socks5://beta-alpha.net:22221</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22222</value>
+            <value>socks5://beta-beta.net:22222</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:22223</value>
+            <value>socks5://beta-gamma.net:22223</value>
         </setting>
         <setting>
             <name>chaining.routeId</name>
@@ -3280,15 +3267,15 @@ Server configuration file example:
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33331</value>
+            <value>socks5://gamma-alpha.net:33331</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33332</value>
+            <value>socks5://gamma-beta.net:33332</value>
         </setting>
         <setting>
             <name>chaining.socksServerUri</name>
-            <value>socks5://127.0.0.1:33333</value>
+            <value>socks5://gamma-gamma.net:33333</value>
         </setting>
         <setting>
             <name>lastRouteId</name>
@@ -3394,15 +3381,15 @@ public class ServerApp {
     public static void main(String[] args) throws IOException {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             /*
-             * Redirect desired destination 'discontinuedserver.com' 
-             * to 'newserver.com' and log as an informational 
+             * Redirect desired destination 'discontinued-server.net' 
+             * to 'new-server.net' and log as an informational 
              * message the redirection
              */
             Setting.newInstanceWithParsedValue(
                 "rule", 
-                "socks5.request.desiredDestinationAddress=discontinuedserver.com,"
+                "socks5.request.desiredDestinationAddress=discontinued-server.net,"
                 + "firewallAction=ALLOW,"
-                + "socks5.request.desiredDestinationAddressRedirect=newserver.com,"
+                + "socks5.request.desiredDestinationAddressRedirect=new-server.net,"
                 + "socks5.request.desiredDestinationRedirectLogAction=LOG_AS_INFO"),
             /*
              * Allow anything else
@@ -3418,7 +3405,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=rule=socks5.request.desiredDestinationAddress=discontinuedserver.com,firewallAction=ALLOW,socks5.request.desiredDestinationAddressRedirect=newserver.com,socks5.request.desiredDestinationRedirectLogAction=LOG_AS_INFO \
+    --setting=rule=socks5.request.desiredDestinationAddress=discontinued-server.net,firewallAction=ALLOW,socks5.request.desiredDestinationAddressRedirect=new-server.net,socks5.request.desiredDestinationRedirectLogAction=LOG_AS_INFO \
     --setting=rule=firewallAction=ALLOW
 ```
 
@@ -3434,7 +3421,7 @@ Server configuration file example:
                 <ruleConditions>
                     <ruleCondition>
                         <name>socks5.request.desiredDestinationAddress</name>
-                        <value>discontinuedserver.com</value>
+                        <value>discontinued-server.net</value>
                     </ruleCondition>
                 </ruleConditions>
                 <ruleActions>
@@ -3444,7 +3431,7 @@ Server configuration file example:
                     </ruleAction>
                     <ruleAction>
                         <name>socks5.request.desiredDestinationAddressRedirect</name>
-                        <value>newserver.com</value>
+                        <value>new-server.net</value>
                     </ruleAction>
                     <ruleAction>
                         <name>socks5.request.desiredDestinationRedirectLogAction</name>
@@ -3473,7 +3460,10 @@ Server configuration file example:
 
 To configure the sockets, you will need any of the following rule actions:
 
--   `bindHost`: Specifies the binding host name or address for all sockets 
+-   `bindHost`: Specifies the binding host name or address for all sockets
+-   `bindHostAddressType`: Specifies an acceptable binding host address type
+for all sockets (This rule action can be specified multiple times with each 
+rule action specifying another host address type)
 -   `bindTcpPortRange`: Specifies a binding port range for all TCP sockets 
 (This rule action can be specified multiple times with each rule action 
 specifying another port range)
@@ -3485,6 +3475,10 @@ specifying another port range)
 specifying another socket setting)
 -   `externalFacingBindHost`: Specifies the binding host name or address 
 for all external-facing sockets 
+-   `externalFacingBindHostAddressType`: Specifies an acceptable binding 
+host address type for all external-facing sockets (This rule action can be 
+specified multiple times with each rule action specifying another host address 
+type)
 -   `externalFacingBindTcpPortRange`: Specifies a binding 
 port range for all external-facing TCP 
 sockets (This rule action can be specified multiple times with each rule action 
@@ -3493,18 +3487,28 @@ specifying another port range)
 port range for all external-facing UDP 
 sockets (This rule action can be specified multiple times with each rule action 
 specifying another port range)
+-   `externalFacingNetInterface`: Specifies the network interface that 
+provides a binding host address for all external-facing sockets 
 -   `externalFacingSocketSetting`: Specifies a socket setting for all 
 external-facing sockets (This rule action can be specified multiple times with 
 each rule action specifying another socket setting)
 -   `internalFacingBindHost`: Specifies the binding host name or address for 
 all internal-facing sockets
+-   `internalFacingBindHostAddressType`: Specifies an acceptable binding host 
+address type for all internal-facing sockets (This rule action can be 
+specified multiple times with each rule action specifying another host address 
+type)
 -   `internalFacingBindUdpPortRange`: Specifies a binding 
 port range for all internal-facing UDP 
 sockets (This rule action can be specified multiple times with each rule action 
 specifying another port range)
+-   `internalFacingNetInterface`: Specifies the network interface that 
+provides a binding host address for all internal-facing sockets 
 -   `internalFacingSocketSetting`: Specifies a socket setting for all 
 internal-facing sockets (This rule action can be specified multiple times with 
 each rule action specifying another socket setting)
+-   `netInterface`: Specifies the network interface that provides a binding 
+host address for all sockets 
 -   `socketSetting`: Specifies a socket setting for all sockets (This rule 
 action can be specified multiple times with each rule action specifying another 
 socket setting)
@@ -3513,10 +3517,16 @@ the inbound socket (This rule action can be specified multiple times with each
 rule action specifying another socket setting)
 -   `socks5.onBindRequest.listenBindHost`: Specifies the binding host name or 
 address for the listen socket if the provided host address is all zeros
+-   `socks5.onBindRequest.listenBindHostAddressType`: Specifies an acceptable 
+binding host address type for the listen socket (This rule action can be 
+specified multiple times with each rule action specifying another host address 
+type) 
 -   `socks5.onBindRequest.listenBindPortRange`: Specifies a binding 
 port range for the listen socket if the provided port is zero (This rule 
 action can be specified multiple times with each rule action specifying another 
 port range)
+-   `socks5.onBindRequest.listenNetInterface`: Specifies the network interface 
+that provides a binding host address for the listen socket
 -   `socks5.onBindRequest.listenSocketSetting`: Specifies a socket setting for 
 the listen socket (This rule action can be specified multiple times with each 
 rule action specifying another socket setting)
@@ -3526,59 +3536,80 @@ connecting (involves applying the specified socket settings, resolving the
 target host name, and setting the specified timeout on waiting to connect)
 -   `socks5.onConnectRequest.targetFacingBindHost`: Specifies the binding host 
 name or address for the target-facing socket
+-   `socks5.onConnectRequest.targetFacingBindHostAddressType`: Specifies an 
+acceptable binding host address type for the target-facing socket (This rule 
+action can be specified multiple times with each rule action specifying 
+another host address type)
 -   `socks5.onConnectRequest.targetFacingBindPortRange`: Specifies a binding 
 port range for the target-facing socket (This rule action can be specified 
 multiple times with each rule action specifying another port range)
 -   `socks5.onConnectRequest.targetFacingConnectTimeout`: Specifies the timeout 
 in milliseconds on waiting for the target-facing socket to connect (Value must 
 be an integer between 1 (inclusive) and 2147483647 (inclusive))
+-   `socks5.onConnectRequest.targetFacingNetInterface`: Specifies the network
+interface that provides a binding host address for the target-facing socket
 -   `socks5.onConnectRequest.targetFacingSocketSetting`: Specifies a socket 
 setting for the target-facing socket (This rule action can be specified multiple 
 times with each rule action specifying another socket setting)
--   `socks5.onRequest.bindHost`: Specifies the binding host name or address
-for all sockets
--   `socks5.onRequest.bindTcpPortRange`: Specifies a binding
-port range for all TCP sockets (This rule action can be specified multiple
-times with each rule action specifying another port range)
--   `socks5.onRequest.bindUdpPortRange`: Specifies a binding
-port range for all UDP sockets (This rule action can be specified multiple
-times with each rule action specifying another port range)
 -   `socks5.onRequest.externalFacingBindHost`: Specifies the binding host
 name or address for all external-facing sockets
+-   `socks5.onRequest.externalFacingBindHostAddressType`: Specifies an 
+acceptable binding host address type for all external-facing sockets (This 
+rule action can be specified multiple times with each rule action specifying 
+another host address type) 
 -   `socks5.onRequest.externalFacingBindTcpPortRange`: Specifies a
 binding port range for all external-facing TCP sockets (This rule action can be
 specified multiple times with each rule action specifying another port range)
 -   `socks5.onRequest.externalFacingBindUdpPortRange`: Specifies a
 binding port range for all external-facing UDP sockets (This rule action can be
 specified multiple times with each rule action specifying another port range)
+-   `socks5.onRequest.externalFacingNetInterface`: Specifies the network 
+interface that provides a binding host address for all external-facing sockets
 -   `socks5.onRequest.externalFacingSocketSetting`: Specifies a socket
 setting for all external-facing sockets (This rule action can be specified
 multiple times with each rule action specifying another socket setting)
 -   `socks5.onRequest.internalFacingBindHost`: Specifies the binding
 host name or address for all internal-facing sockets
+-   `socks5.onRequest.internalFacingBindHostAddressType`: Specifies an 
+acceptable binding host address type for all internal-facing sockets (This 
+rule action can be specified multiple times with each rule action specifying 
+another host address type)
 -   `socks5.onRequest.internalFacingBindUdpPortRange`: Specifies a
 binding port range for all internal-facing UDP sockets (This rule action can be
 specified multiple times with each rule action specifying another port range)
+-   `socks5.onRequest.internalFacingNetInterface`: Specifies the network
+interface that provides a binding host address for all internal-facing sockets
 -   `socks5.onRequest.internalFacingSocketSetting`: Specifies a socket
 setting for all internal-facing sockets (This rule action can be specified
 multiple times with each rule action specifying another socket setting)
--   `socks5.onRequest.socketSetting`: Specifies a socket setting for all
-sockets (This rule action can be specified multiple times with each rule action
-specifying another socket setting)
 -   `socks5.onUdpAssociateRequest.clientFacingBindHost`: Specifies the binding 
 host name or address for the client-facing UDP socket
+-   `socks5.onUdpAssociateRequest.clientFacingBindHostAddressType`: Specifies 
+an acceptable binding host address type for the client-facing UDP socket (This 
+rule action can be specified multiple times with each rule action specifying 
+another host address type)
 -   `socks5.onUdpAssociateRequest.clientFacingBindPortRange`: Specifies a 
 binding port range for the client-facing UDP socket (This rule action can be 
 specified multiple times with each rule action specifying another port range)
+-   `socks5.onUdpAssociateRequest.clientFacingNetInterface`: Specifies a 
+network interface that provides a binding host address for the client-facing 
+UDP socket
 -   `socks5.onUdpAssociateRequest.clientFacingSocketSetting`: Specifies a 
 socket setting for the client-facing UDP socket (This rule action can be 
 specified multiple times with each rule action specifying another socket 
 setting)
 -   `socks5.onUdpAssociateRequest.peerFacingBindHost`: Specifies the binding 
 host name or address for the peer-facing UDP socket
+-   `socks5.onUdpAssociateRequest.peerFacingBindHostAdddressType`: Specifies 
+an acceptable binding host address type for the peer-facing UDP socket (This 
+rule action can be specified multiple times with each rule action specifying 
+another host address type)
 -   `socks5.onUdpAssociateRequest.peerFacingBindPortRange`: Specifies a 
 binding port range for the peer-facing UDP socket (This rule action can be 
 specified multiple times with each rule action specifying another port range)
+-   `socks5.onUdpAssociateRequest.peerFacingNetInterface`: Specifies the 
+network interface that provides a binding host address for the peer-facing UDP 
+socket
 -   `socks5.onUdpAssociateRequest.peerFacingSocketSetting`: Specifies a socket 
 setting for the peer-facing UDP socket (This rule action can be specified 
 multiple times with each rule action specifying another socket setting)
@@ -3616,13 +3647,13 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             /*
              * Allow the CONNECT request to connect to 
-             * 'specialserver.com' and configure the target-facing 
+             * 'special-server.net' and configure the target-facing 
              * socket
              */
             Setting.newInstanceWithParsedValue(
                 "rule", 
                 "socks5.request.command=CONNECT,"
-                + "socks5.request.desiredDestinationAddress=specialserver.com,"
+                + "socks5.request.desiredDestinationAddress=special-server.net,"
                 + "firewallAction=ALLOW,"
                 + "socks5.onConnectRequest.prepareTargetFacingSocket=true,"
                 + "socks5.onConnectRequest.targetFacingSocketSetting=SO_RCVBUF=256,"
@@ -3641,7 +3672,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=specialserver.com,firewallAction=ALLOW,socks5.onConnectRequest.prepareTargetFacingSocket=true,socks5.onConnectRequest.targetFacingSocketSetting=SO_RCVBUF=256,socks5.onConnectRequest.targetFacingSocketSetting=SO_SNDBUF=256 \
+    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=special-server.net,firewallAction=ALLOW,socks5.onConnectRequest.prepareTargetFacingSocket=true,socks5.onConnectRequest.targetFacingSocketSetting=SO_RCVBUF=256,socks5.onConnectRequest.targetFacingSocketSetting=SO_SNDBUF=256 \
     --setting=rule=firewallAction=ALLOW
 ```
 
@@ -3661,7 +3692,7 @@ Server configuration file example:
                     </ruleCondition>            
                     <ruleCondition>
                         <name>socks5.request.desiredDestinationAddress</name>
-                        <value>specialserver.com</value>
+                        <value>special-server.net</value>
                     </ruleCondition>
                 </ruleConditions>
                 <ruleActions>
@@ -3766,13 +3797,13 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             /*
              * Allow the CONNECT request to connect to 
-             * 'intermittent-idling-server.com' with a relay idle 
+             * 'intermittent-idling-server.net' with a relay idle 
              * timeout of 1024000 milliseconds (1024 seconds)
              */
             Setting.newInstanceWithParsedValue(
                 "rule", 
                 "socks5.request.command=CONNECT,"
-                + "socks5.request.desiredDestinationAddress=intermittent-idling-server.com,"
+                + "socks5.request.desiredDestinationAddress=intermittent-idling-server.net,"
                 + "firewallAction=ALLOW,"
                 + "socks5.onConnectRequest.relayIdleTimeout=1024000"),
             /*
@@ -3789,7 +3820,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=intermittent-idling-server.com,firewallAction=ALLOW,socks5.onConnectRequest.relayIdleTimeout=1024000 \
+    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=intermittent-idling-server.net,firewallAction=ALLOW,socks5.onConnectRequest.relayIdleTimeout=1024000 \
     --setting=rule=firewallAction=ALLOW
 ```
 
@@ -3809,7 +3840,7 @@ Server configuration file example:
                     </ruleCondition>            
                     <ruleCondition>
                         <name>socks5.request.desiredDestinationAddress</name>
-                        <value>intermittent-idling-server.com</value>
+                        <value>intermittent-idling-server.net</value>
                     </ruleCondition>
                 </ruleConditions>
                 <ruleActions>
@@ -3897,14 +3928,14 @@ public class ServerApp {
         new SocksServer(Configuration.newUnmodifiableInstance(Settings.of(
             /*
              * Allow the CONNECT request to connect to 
-             * 'streamingwebsite.com' with an upper limit on the 
+             * 'streaming-server.net' with an upper limit on the 
              * relay inbound and outbound bandwidth of 1024000 
              * bytes per second
              */
             Setting.newInstanceWithParsedValue(
                 "rule", 
                 "socks5.request.command=CONNECT,"
-                + "socks5.request.desiredDestinationAddress=streamingwebsite.com,"
+                + "socks5.request.desiredDestinationAddress=streaming-server.net,"
                 + "firewallAction=ALLOW,"
                 + "socks5.onConnectRequest.relayInboundBandwidthLimit=1024000,"
                 + "socks5.onConnectRequest.relayOutboundBandwidthLimit=1024000"),
@@ -3922,7 +3953,7 @@ Command line example:
 
 ```bash
 jargyle start-server \
-    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=streamingwebsite.com,firewallAction=ALLOW,socks5.onConnectRequest.relayInboundBandwidthLimit=1024000,socks5.onConnectRequest.relayOutboundBandwidthLimit=1024000 \
+    --setting=rule=socks5.request.command=CONNECT,socks5.request.desiredDestinationAddress=streaming-server.net,firewallAction=ALLOW,socks5.onConnectRequest.relayInboundBandwidthLimit=1024000,socks5.onConnectRequest.relayOutboundBandwidthLimit=1024000 \
     --setting=rule=firewallAction=ALLOW
 ```
 
@@ -3942,7 +3973,7 @@ Server configuration file example:
                     </ruleCondition>            
                     <ruleCondition>
                         <name>socks5.request.desiredDestinationAddress</name>
-                        <value>streamingwebsite.com</value>
+                        <value>streaming-server.net</value>
                     </ruleCondition>
                 </ruleConditions>
                 <ruleActions>
