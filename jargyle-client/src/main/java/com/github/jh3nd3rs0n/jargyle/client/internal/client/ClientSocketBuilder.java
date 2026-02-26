@@ -77,12 +77,10 @@ public final class ClientSocketBuilder {
      * @throws IOException if an I/O error occurs in creating the client socket
      */
     public Socket newBoundConnectedClientSocket() throws IOException {
-        Properties properties = this.socksClientAgent.getProperties();
         InetAddress localAddr =
-                GeneralValueDerivationHelper.getClientBindHostFrom(
-                        properties).toInetAddress();
-        PortRanges localPortRanges = properties.getValue(
-                GeneralPropertySpecConstants.CLIENT_BIND_PORT_RANGES);
+                this.socksClientAgent.getClientBindHost().toInetAddress();
+        PortRanges localPortRanges =
+                this.socksClientAgent.getClientBindPortRanges();
         Socket clientSocket = null;
         boolean clientSocketBound = false;
         for (Iterator<PortRange> iterator = localPortRanges.toList().iterator();
